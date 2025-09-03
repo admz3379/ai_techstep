@@ -1,26 +1,12 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "executive-edge-academy",
+  "name": "ai-techstep",
   "compatibility_date": "2025-09-03",
   "pages_build_output_dir": "./dist",
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "ai-income-builder-production",
-      "database_id": "placeholder-will-be-replaced-after-creation"
-    }
-  ],
-  "kv_namespaces": [
-    {
-      "binding": "KV",
-      "id": "placeholder-will-be-replaced-after-creation",
-      "preview_id": "placeholder-will-be-replaced-after-creation"
-    }
-  ],
   "vars": {
-    "ENVIRONMENT": "development"
+    "ENVIRONMENT": "production"
   }
 }

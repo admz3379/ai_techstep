@@ -10,20 +10,13 @@
 - **Key Features**: Coursiv-style quiz flow, one-time payment, parent-focused AI education
 
 ## Live URLs
-- **Development**: https://3000-id7sm8hsjk2vi1levqq2s-6532622b.e2b.dev (AI TechStep - Mobile Showcase & Responsive Design)
-- **Production**: (Deploy to Cloudflare Pages using: `npm run deploy`)
-- **GitHub**: (Setup using `setup_github_environment` then push)
+- **Development**: https://3000-id7sm8hsjk2vi1levqq2s-6532622b.e2b.dev (AI TechStep - Clean Hero Design)
+- **GitHub**: https://github.com/admz3379/ai_techstep ✅ Pushed
+- **Production**: Ready for Cloudflare Pages deployment (`ai-techstep-challenge`)
 
 ## Currently Completed Features
 - ✅ **Fully Mobile Optimized**: Complete responsive design with mobile-first approach
-- ✅ **Homepage**: Clean Coursiv-style landing optimized for all screen sizes
-- ✅ **Mobile Showcase Section**: 2-column responsive grid with device mockup and CTA
-  - Desktop: text left, mockup right with blurred browser frame
-  - Mobile: stacked vertical (device first, text second, center-aligned)
-  - Copy: "Built for desktop & mobile" + "Launch from anywhere—your 28-day plan fits your day"
-  - Interactive "See how it works" button that scrolls to quiz section
-  - Device mockup: 390×844 SVG with AI TechStep branding and 28-day challenge
-  - Global network banner with rotating multilingual greetings (Hi, Hola, 你好, مرحبا, etc.)
+- ✅ **Homepage**: Clean Coursiv-style hero design focused on conversion
 - ✅ **Interactive Quiz**: 21 gamified questions with AI class reveal and slot machine animation
 - ✅ **AI Profile System**: Personalized AI readiness scoring with 8 distinct AI classes
 - ✅ **Slot Machine Animation**: Engaging 2.5s jackpot reveal for AI class results
@@ -131,7 +124,7 @@
 - **Build Command**: `npm run build`
 - **Deploy Command**: `npm run deploy` (after Cloudflare setup)
 - **Development**: `npm run dev:d1` (with local database)
-- **Last Updated**: 2025-09-03 (Mobile showcase section with responsive design complete)
+- **Last Updated**: 2025-09-03 (Reverted to clean hero design, GitHub pushed, ready for Cloudflare deployment)
 - **Location**: Dallas, Texas • Powered by iPS
 - **Email System**: ✅ Configured (support@techstepfoundation.org)
 

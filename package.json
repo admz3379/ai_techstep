@@ -1,7 +1,7 @@
 {
-  "name": "ai-income-builder",
+  "name": "executive-edge-academy",
   "version": "1.0.0",
-  "description": "AI Income Builder v1.0 - Gamified cohort platform for AI income-building programs",
+  "description": "Executive Edge Academy - Premium business transformation platform for building AI-powered enterprises",
   "type": "module",
   "scripts": {
     "dev": "vite",

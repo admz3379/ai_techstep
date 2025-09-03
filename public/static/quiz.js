@@ -53,14 +53,14 @@ function loadQuestion(index) {
   
   question.options.forEach((option, optionIndex) => {
     const optionDiv = document.createElement('div');
-    optionDiv.className = 'bg-white/5 hover:bg-white/10 border-2 border-transparent hover:border-purple-400 rounded-lg p-4 cursor-pointer transition-all duration-200';
+    optionDiv.className = 'border-2 border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:border-blue-300 hover:bg-blue-50';
     optionDiv.onclick = () => selectOption(optionIndex, option.value);
     optionDiv.innerHTML = `
-      <div class="flex items-center">
-        <div class="w-4 h-4 border-2 border-white rounded-full mr-4 flex items-center justify-center">
-          <div class="w-2 h-2 bg-white rounded-full hidden"></div>
+      <div class="flex items-start">
+        <div class="w-5 h-5 border-2 border-gray-300 rounded-full mr-4 mt-0.5 flex items-center justify-center flex-shrink-0">
+          <div class="w-2.5 h-2.5 bg-blue-600 rounded-full hidden"></div>
         </div>
-        <span>${option.text[quizState.lang] || option.text.en}</span>
+        <span class="text-gray-700 leading-relaxed">${option.text[quizState.lang] || option.text.en}</span>
       </div>
     `;
     optionsContainer.appendChild(optionDiv);
@@ -75,10 +75,12 @@ function selectOption(optionIndex, value) {
   document.querySelectorAll('#options-container > div').forEach((div, index) => {
     const circle = div.querySelector('div > div');
     if (index === optionIndex) {
-      div.classList.add('border-purple-400', 'bg-white/10');
+      div.classList.add('border-blue-600', 'bg-blue-50');
+      div.classList.remove('border-gray-200');
       circle.classList.remove('hidden');
     } else {
-      div.classList.remove('border-purple-400', 'bg-white/10');
+      div.classList.remove('border-blue-600', 'bg-blue-50');
+      div.classList.add('border-gray-200');
       circle.classList.add('hidden');
     }
   });
@@ -93,7 +95,9 @@ function updateNextButton() {
   nextBtn.disabled = !quizState.selectedAnswers[quizState.currentQuestion];
   
   if (quizState.currentQuestion === quizState.questions.length - 1 && quizState.selectedAnswers[quizState.currentQuestion]) {
-    nextBtn.textContent = 'See Results 🎉';
+    nextBtn.textContent = 'See Results →';
+  } else if (quizState.selectedAnswers[quizState.currentQuestion]) {
+    nextBtn.textContent = 'Continue →';
   }
 }
 
@@ -136,10 +140,10 @@ async function showResults() {
   document.getElementById('results-container').classList.remove('hidden');
   
   const trackNames = {
-    digital_product: '🎓 Digital Product Creator',
-    service: '⚡ AI Service Provider', 
-    ecommerce: '🛍️ E-commerce Entrepreneur',
-    consulting: '🧠 AI Strategy Consultant'
+    digital_product: 'Digital Intelligence Products',
+    service: 'Enterprise AI Services', 
+    ecommerce: 'AI Investment & Scaling',
+    consulting: 'AI Consulting Empire'
   };
   
   document.getElementById('track-name').textContent = trackNames[bestTrack];

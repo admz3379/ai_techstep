@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ai-income-builder",
+  "name": "executive-edge-academy",
   "compatibility_date": "2025-09-03",
   "pages_build_output_dir": "./dist",
   "compatibility_flags": [

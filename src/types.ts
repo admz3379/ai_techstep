@@ -16,6 +16,7 @@ export interface User {
 export interface QuizQuestion {
   id: number;
   text: Record<Language, string>;
+  subtitle?: Record<Language, string>;
   options: Array<{
     text: Record<Language, string>;
     value: number;

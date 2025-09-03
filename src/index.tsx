@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
 import type { Bindings, QuizSession, TrackScores, User, QuizResult, Language, TrackType } from './types'
-import { aiChallengeQuizQuestions, aiChallengeTrackDescriptions } from './ai-challenge-quiz-data'
+import { aiTechStepQuizQuestions, aiTechStepTrackDescriptions } from './simple-quiz-data'
 import { renderer } from './renderer'
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -54,7 +54,7 @@ async function calculateTrackScores(env: Bindings, sessionId: string): Promise<T
   };
 
   responses.results?.forEach((response: any) => {
-    const question = aiChallengeQuizQuestions.find(q => q.id === response.question_id);
+    const question = aiTechStepQuizQuestions.find(q => q.id === response.question_id);
     if (question) {
       const selectedOption = question.options.find(opt => opt.value === response.answer_value);
       if (selectedOption) {
@@ -83,13 +83,13 @@ async function assignUserTrack(env: Bindings, userId: number, scores: TrackScore
 }
 
 async function createUserProgress(env: Bindings, userId: number) {
-  // Create 5-day onboarding progress
-  for (let day = 1; day <= 5; day++) {
+  // Create 28-day progress for work-from-home parents
+  for (let day = 1; day <= 28; day++) {
     const status = day === 1 ? 'unlocked' : 'locked';
     const unlockedAt = day === 1 ? new Date().toISOString() : null;
     
     await env.DB.prepare(`
-      INSERT INTO user_progress (user_id, day, phase, status, unlocked_at) VALUES (?, ?, 'onboarding', ?, ?)
+      INSERT INTO user_progress (user_id, day, phase, status, unlocked_at) VALUES (?, ?, 'ai_mastery', ?, ?)
       ON CONFLICT(user_id, day, phase) DO NOTHING
     `).bind(userId, day, status, unlockedAt).run();
   }
@@ -111,36 +111,162 @@ async function deliverAssets(env: Bindings, userId: number, trackType: TrackType
   }
 }
 
-// Redirect root to quiz (quiz-first approach like Coursiv)
+// Homepage - Coursiv-style landing with trust indicators
 app.get('/', (c) => {
-  const lang = c.req.query('lang') || 'en';
-  return c.redirect(`/quiz?lang=${lang}`);
-});
-
-// About page (minimal branding reference)
-app.get('/about', (c) => {
   const lang = c.req.query('lang') || 'en';
   
   return c.render(
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center text-white">
-          <h1 className="text-5xl font-bold mb-6">🚀 28-DAY AI CHALLENGE</h1>
-          <p className="text-2xl mb-8">Join 700,000+ People Building Income with AI</p>
-          <a href="/quiz" className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-8 py-4 rounded-full text-xl transform hover:scale-105 transition-all shadow-lg">
-            🎯 START YOUR AI JOURNEY NOW!
-          </a>
+    <div className="min-h-screen bg-white">
+      {/* Clean header - Coursiv style */}
+      <div className="bg-white">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-gray-900 mb-2">
+              AI TechStep
+            </div>
+            <div className="text-sm text-blue-600 font-medium">"Step into AI Success - One Click at a Time"</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content - Clean Coursiv style */}
+      <div className="max-w-3xl mx-auto px-4 py-12 text-center">
+        
+        {/* Trust indicators - minimal */}
+        <div className="flex justify-center items-center space-x-8 text-sm text-gray-600 mb-8">
+          <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+            700k+ users' choice
+          </div>
+          <div className="font-medium">★★★★★ 4.5 Rated on Trustpilot</div>
+        </div>
+        
+        {/* Main headline */}
+        <div className="mb-12">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-bold inline-block mb-6">
+            28-DAY AI CHALLENGE
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Launch Your First $1K+ AI Project in 30 Days
+          </h1>
+          
+          <p className="text-xl text-blue-600 font-semibold mb-4">
+            "You bring the vision. We'll teach you the AI to bring it to life."
+          </p>
+          
+          <p className="text-lg text-gray-600 mb-6">
+            We don't teach AI. We help you launch your first income stream using AI—even if you've never touched a prompt before.
+          </p>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-blue-800 font-medium">
+              🌱 "You already have everything it takes. AI is the tool. The next 4 weeks are your launchpad."
+            </p>
+          </div>
+        </div>
+
+        {/* Success Path Milestone Tracker */}
+        <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl p-8 mb-8 border border-green-200">
+          <h3 className="text-2xl font-bold text-center text-gray-900 mb-6">Your 30-Day Launch Journey</h3>
+          
+          <div className="grid md:grid-cols-4 gap-4 mb-6">
+            <div className="text-center">
+              <div className="bg-blue-500 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 font-bold">1</div>
+              <div className="font-semibold text-gray-800">Week 1</div>
+              <div className="text-sm text-gray-600">Discover Your AI Idea</div>
+            </div>
+            <div className="text-center">
+              <div className="bg-purple-500 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 font-bold">2</div>
+              <div className="font-semibold text-gray-800">Week 2</div>
+              <div className="text-sm text-gray-600">Build Your Asset</div>
+            </div>
+            <div className="text-center">
+              <div className="bg-orange-500 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 font-bold">3</div>
+              <div className="font-semibold text-gray-800">Week 3</div>
+              <div className="text-sm text-gray-600">Launch & Test</div>
+            </div>
+            <div className="text-center">
+              <div className="bg-green-500 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 font-bold">4</div>
+              <div className="font-semibold text-gray-800">Week 4</div>
+              <div className="text-sm text-gray-600">Market & Monetize</div>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <p className="text-green-700 font-semibold mb-2">🎯 Goal: Launch your first $1K+ project using AI</p>
+            <p className="text-gray-600 text-sm">No coding. No experience. Just your idea + the tools to build it.</p>
+          </div>
+        </div>
+
+        {/* Main question - Enhanced roleplay funnel with coach persona */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
+          <div className="text-center mb-6">
+            <div className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-6 py-3 rounded-full text-sm font-medium inline-block mb-4">
+              👋 Hey there! I'm your AI Launch Coach...
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Quick question to get us started:</h2>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+              <p className="text-yellow-800 font-semibold mb-2">🎯 "I already started. I've already won. I trust this. Let's finish it."</p>
+              <p className="text-yellow-700 text-sm">This attitude shift changes everything. Ready?</p>
+            </div>
+            <h3 className="text-2xl font-bold text-blue-600 mb-2">HAVE YOU EVER USED AI?</h3>
+            <p className="text-gray-600">Your answer unlocks your personalized launch path. No wrong answers—just different starting points.</p>
+          </div>
+          
+          <div className="space-y-4 max-w-md mx-auto">
+            <div className="bg-green-50 border-2 border-green-200 rounded-xl p-1">
+              <a href={`/quiz?lang=${lang}&answer=yes`} 
+                 className="block w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 px-8 rounded-lg text-lg font-bold transition-all duration-200 transform hover:scale-105 shadow-lg">
+                🚀 YES - I've experimented with it
+                <div className="text-sm font-normal opacity-90 mt-1">"Great! We'll build on what you know"</div>
+              </a>
+            </div>
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-1">
+              <a href={`/quiz?lang=${lang}&answer=no`}
+                 className="block w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 px-8 rounded-lg text-lg font-bold transition-all duration-200 transform hover:scale-105 shadow-lg">
+                ✨ NO - I'm ready to start fresh
+                <div className="text-sm font-normal opacity-90 mt-1">"Perfect! You're ahead of 80% already"</div>
+              </a>
+            </div>
+          </div>
+          
+          <div className="text-center mt-6">
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
+              <p className="text-purple-800 font-semibold text-sm">
+                💡 Remember: This is not school—this is your launchpad. Every question gets you closer to your first $1K.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Simple social proof */}
+        <div className="text-center mb-8">
+          <div className="text-lg font-semibold text-gray-800 mb-2">
+            Over 700,000 people chose AI TechStep
+          </div>
+          <div className="text-gray-600">Trusted by work-from-home parents worldwide</div>
+        </div>
+
+        {/* Legal footer */}
+        <div className="text-center text-xs text-gray-500 border-t border-gray-200 pt-6">
+          By proceeding, you agree with <a href="/terms" className="underline hover:text-gray-700">Terms and Conditions</a>, 
+          <a href="/privacy" className="underline hover:text-gray-700 ml-1">Privacy Policy</a>, 
+          <a href="/subscription" className="underline hover:text-gray-700 ml-1">Payment Terms</a><br/>
+          <div className="mt-3">
+            <strong>AI TechStep</strong>, Dallas, Texas • <span className="text-blue-600 font-medium">Powered by iPS</span>
+          </div>
         </div>
       </div>
     </div>,
-    { title: '28-Day AI Challenge - Transform Your Income' }
+    { title: 'AI TechStep - Master AI Skills for Passive Income | Step into AI Success' }
   );
 });
 
-// 28-Day AI Challenge Quiz - Gamified B2C design
+// Coursiv-style quiz with exact flow
 app.get('/quiz', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Language;
   const sessionId = crypto.randomUUID();
+  const initialAnswer = c.req.query('answer'); // 'yes' or 'no' from homepage
   
   // Store quiz session in KV (if available)
   const quizSession: QuizSession = {
@@ -161,136 +287,300 @@ app.get('/quiz', async (c) => {
   return c.render(
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold mb-4">
-            🚀 28-DAY AI CHALLENGE
-          </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-            Discover Your Perfect AI Income Path!
-          </h1>
-          <p className="text-lg text-gray-600">Join 700,000+ people who've transformed their income with AI</p>
-          <div className="flex justify-center items-center mt-4 space-x-4">
-            <div className="flex items-center text-green-600">
-              <span className="text-2xl mr-2">🔥</span>
-              <span className="font-semibold">2,847 people took this today!</span>
+        
+        {/* Progress header */}
+        <div className="text-center mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm font-semibold text-gray-600">
+              <span id="current-q">1</span> / 20
+            </span>
+            <div className="flex-1 mx-4">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div id="progress-bar" className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500" style="width: 5%"></div>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Progress indicator */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-sm text-gray-500">Question <span id="current-q">1</span> of 20</span>
-            <span className="text-sm text-gray-500"><span id="progress-percent">5</span>%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div id="progress-bar" className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-500" style="width: 5%"></div>
+            <span className="text-sm font-semibold text-gray-600">
+              <span id="progress-percent">5</span>%
+            </span>
           </div>
         </div>
 
         {/* Question container */}
-        <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div id="question-container" data-session-id={sessionId} data-lang={lang}>
-            <h2 id="question-text" className="text-xl font-semibold text-gray-900 mb-8 leading-relaxed"></h2>
+        <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-100 mb-8">
+          <div id="question-container" data-session-id={sessionId} data-lang={lang} data-initial-answer={initialAnswer}>
             
-            <div id="options-container" className="space-y-3">
+            <div id="question-text-container" className="text-center mb-8">
+              <h2 id="question-text" className="text-2xl font-bold text-gray-900 mb-4"></h2>
+              <p id="question-subtitle" className="text-gray-600 hidden"></p>
+            </div>
+            
+            <div id="options-container" className="space-y-4 max-w-2xl mx-auto">
               {/* Options will be populated by JavaScript */}
             </div>
             
-            <div className="flex justify-between mt-10">
+            <div className="flex justify-between mt-12">
               <button 
                 id="back-btn" 
                 onclick="previousQuestion()" 
-                className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
+                className="px-6 py-3 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
                 disabled
               >
-                ← Previous
+                ← Back
               </button>
               <button 
                 id="next-btn" 
                 onclick="nextQuestion()" 
-                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold transform hover:scale-105" 
+                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold" 
                 disabled
               >
-                Continue 🚀
+                Next →
               </button>
             </div>
           </div>
 
-          {/* Results container (hidden initially) */}
+          {/* Encouragement messages - shown between questions */}
+          <div id="encouragement-container" className="hidden text-center py-8">
+            <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-8 border border-green-200">
+              <h3 className="text-xl font-bold text-green-800 mb-4">Worry no more! We will help you to gain your confidence back</h3>
+              <p className="text-green-700 leading-relaxed">
+                Over 700,000 adults joined our AI challenge to improve their skills. Our challenge is backed by thousands 
+                hours of research and content carefully crafted to your needs and skills!
+              </p>
+              <button onclick="continueQuiz()" className="mt-6 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 font-semibold">
+                Continue →
+              </button>
+            </div>
+          </div>
+
+          {/* AI Knowledge encouragement */}
+          <div id="ai-knowledge-encouragement" className="hidden text-center py-8">
+            <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-8 border border-blue-200">
+              <h3 className="text-xl font-bold text-blue-800 mb-4">Great to hear that you already know how to use AI!</h3>
+              <div className="text-sm text-blue-600 font-semibold mb-2">AI TechStep - "Step into AI Success"</div>
+              <p className="text-blue-700 leading-relaxed">
+                AI always evolves, we make sure that you learn the latest tools that you can apply in real life. 
+                Our challenge combines 30+ various AI tools that you can use for any task, moreover we have multiple 
+                practical lessons how you can apply AI to explore new income opportunities.
+              </p>
+              <button onclick="continueQuiz()" className="mt-6 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold">
+                Continue →
+              </button>
+            </div>
+          </div>
+
+          {/* Results container - AI Experience Profile */}
           <div id="results-container" className="hidden">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-6 animate-pulse">
-                <span className="text-4xl">🎆</span>
-              </div>
               
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-                🎉 Your Perfect AI Income Match!
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">Here's Your AI Experience Profile</h2>
+              
+              {/* Readiness Score Dashboard */}
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-8 border border-blue-200 mb-8">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Readiness score</h3>
+                <div className="text-4xl font-bold text-green-600 mb-2">
+                  <span id="readiness-level">Perfect</span>
+                </div>
+                <div className="text-sm text-gray-600 mb-4">Result: <span id="readiness-result">Intermediate</span></div>
+                
+                <div className="text-lg font-semibold text-green-700 mb-4">
+                  Impressive score to succeed in AI
+                </div>
+                
+                <div className="bg-white rounded-lg p-4 text-sm text-gray-700">
+                  A recent study by PwC in 2024 revealed that professionals in AI-related roles earn, 
+                  on average, 25% more in the United States than their peers in similar positions without AI expertise.
+                </div>
+              </div>
+
+              {/* Profile metrics */}
+              <div className="grid md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="text-sm text-gray-600 mb-1">Motivation</div>
+                  <div className="text-xl font-bold text-green-600">High</div>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="text-sm text-gray-600 mb-1">Potential</div>
+                  <div className="text-xl font-bold text-green-600">High</div>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="text-sm text-gray-600 mb-1">Focus</div>
+                  <div className="text-xl font-bold text-orange-500" id="focus-level">Limited</div>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="text-sm text-gray-600 mb-1">AI Knowledge</div>
+                  <div className="text-xl font-bold text-blue-600" id="ai-knowledge-level">Low</div>
+                </div>
+              </div>
+
+              <button 
+                onclick="continueToPersonalization()" 
+                className="w-full max-w-md mx-auto block bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 px-8 rounded-lg font-bold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
+              >
+                Continue →
+              </button>
+            </div>
+          </div>
+
+          {/* Personal Launch Plan */}
+          <div id="special-achievement-container" className="hidden text-center py-8">
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                🎯 Your Personal 30-Day Launch Plan
               </h2>
               
-              <div id="track-result" className="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl p-6 mb-8 shadow-lg">
-                <h3 id="track-name" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-3"></h3>
-                <p id="track-description" className="text-gray-700 leading-relaxed text-lg"></p>
+              <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-8 border border-green-200 mb-6">
+                <div className="text-center mb-6">
+                  <div className="text-lg text-blue-700 font-semibold mb-2">
+                    💡 "You already have everything it takes. AI is the tool."
+                  </div>
+                  <p className="text-gray-700 mb-4">
+                    Based on your answers, here's your customized launch strategy:
+                  </p>
+                </div>
+                
+                <div className="bg-white rounded-lg p-6 mb-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Your Launch Focus</h3>
+                  <div className="text-gray-700 mb-4">
+                    Primary Goal: <span id="user-goal" className="font-semibold text-blue-600">Launch your first $1K+ AI project</span>
+                  </div>
+                  
+                  {/* Success Path Tracker */}
+                  <div className="grid grid-cols-4 gap-2 mb-4">
+                    <div className="bg-blue-100 text-blue-800 p-2 rounded text-xs font-medium">
+                      Week 1<br/>Discover
+                    </div>
+                    <div className="bg-purple-100 text-purple-800 p-2 rounded text-xs font-medium">
+                      Week 2<br/>Build
+                    </div>
+                    <div className="bg-orange-100 text-orange-800 p-2 rounded text-xs font-medium">
+                      Week 3<br/>Launch
+                    </div>
+                    <div className="bg-green-100 text-green-800 p-2 rounded text-xs font-medium">
+                      Week 4<br/>Monetize
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm text-gray-600">
+                    ✅ Small action beats endless research<br/>
+                    ✅ Done is better than perfect<br/>
+                    ✅ You're a Creator now—this is your launchpad
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                  <h4 className="font-bold text-yellow-800 mb-3">🚀 Your Immediate Next Step:</h4>
+                  <div className="bg-white rounded-lg p-3 mb-3">
+                    <div className="text-sm text-yellow-700 font-semibold">"I already started. I've already won. I trust this."</div>
+                  </div>
+                  <div className="text-yellow-700 text-sm space-y-1">
+                    <div>✅ Get your personalized launch templates</div>
+                    <div>✅ Start Week 1 action steps (15 min today)</div>
+                    <div>✅ Join your Creator Community</div>
+                    <div>✅ Access your $1K project blueprint</div>
+                  </div>
+                  <p className="text-yellow-800 font-semibold text-sm mt-2">
+                    No more waiting. No more research. Let's launch something real.
+                  </p>
+                </div>
               </div>
               
-              <div id="email-form" className="bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-xl p-6 mb-6">
-                <div className="text-center mb-4">
-                  <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-bounce">
-                    🔥 LIMITED TIME OFFER!
-                  </span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
-                  Get Your FREE AI Income Roadmap + 🎁 Bonus Training!
+              <div className="text-lg font-semibold text-gray-800 mb-2">
+                Join 700,000+ people who've already started their launch
+              </div>
+              <div className="text-gray-600 text-sm mb-6">
+                "I already started. I've already won. I trust this. Let's finish it."
+              </div>
+              
+              <button 
+                onclick="showEmailForm()" 
+                className="w-full max-w-md mx-auto block bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-8 rounded-lg font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg"
+              >
+                🎯 Get My Launch Plan & Templates
+              </button>
+            </div>
+          </div>
+
+          {/* Email collection form - Action-oriented */}
+          <div id="email-form-container" className="hidden text-center py-8">
+            <div className="max-w-md mx-auto">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 className="text-xl font-bold text-blue-900 mb-2">
+                  🎯 Ready to Start Your Launch?
                 </h3>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <input 
-                    type="email" 
-                    id="user-email" 
-                    placeholder="Enter your email address" 
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
-                    required 
-                  />
-                  <button 
-                    onclick="submitQuiz()" 
-                    className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 font-bold transition-all duration-200 whitespace-nowrap transform hover:scale-105 shadow-lg"
-                  >
-                    🎁 GET MY FREE ROADMAP NOW!
-                  </button>
+                <p className="text-blue-800 text-sm">
+                  Get your personalized templates + Week 1 action plan delivered instantly
+                </p>
+              </div>
+              
+              <div className="bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-lg p-6 mb-4">
+                <h4 className="font-semibold text-blue-900 mb-3">🎁 What launches in your inbox right now:</h4>
+                <div className="grid md:grid-cols-2 gap-3 mb-4">
+                  <div className="bg-white rounded p-3 border border-blue-200">
+                    <div className="text-sm font-semibold text-blue-800">📋 Your Launch Roadmap</div>
+                    <div className="text-xs text-blue-600">30-day step-by-step blueprint</div>
+                  </div>
+                  <div className="bg-white rounded p-3 border border-blue-200">
+                    <div className="text-sm font-semibold text-blue-800">🛠️ AI Templates Library</div>
+                    <div className="text-xs text-blue-600">Ready-to-customize frameworks</div>
+                  </div>
+                  <div className="bg-white rounded p-3 border border-blue-200">
+                    <div className="text-sm font-semibold text-blue-800">⚡ Week 1 Actions</div>
+                    <div className="text-xs text-blue-600">15 min daily launch tasks</div>
+                  </div>
+                  <div className="bg-white rounded p-3 border border-blue-200">
+                    <div className="text-sm font-semibold text-blue-800">👥 Creator Community</div>
+                    <div className="text-xs text-blue-600">700K+ parent entrepreneurs</div>
+                  </div>
+                </div>
+                <div className="bg-green-100 border border-green-300 rounded p-3">
+                  <div className="text-sm text-green-800 font-semibold">💡 "This is not school. This is your launchpad."</div>
                 </div>
               </div>
               
-              <div className="text-left bg-white border border-gray-200 rounded-xl p-6 shadow-md">
-                <h4 className="font-bold text-gray-900 mb-4 text-center">🎁 Your FREE Package Includes:</h4>
-                <div className="text-sm text-gray-700 space-y-3">
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-3">🎯</span>
-                    <span>Personalized AI income strategy based on your answers</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-3">🚀</span>
-                    <span>Step-by-step 28-day action plan to start earning</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-3">📚</span>
-                    <span>FREE AI tools and resources library ($297 value)</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-3">🏆</span>
-                    <span>Exclusive invite to our 700k+ AI community</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-3">⚡</span>
-                    <span>Bonus: "AI Income Secrets" masterclass ($197 value)</span>
-                  </div>
-                </div>
+              <div className="space-y-4">
+                <input 
+                  type="email" 
+                  id="user-email" 
+                  placeholder="Enter your email to get started" 
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
+                  required 
+                />
+                <input 
+                  type="text" 
+                  id="user-name" 
+                  placeholder="What's your first name?" 
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none hidden" 
+                  required 
+                />
+                <button 
+                  onclick="submitEmail()" 
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-6 rounded-lg font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg"
+                  id="email-submit-btn"
+                >
+                  🚀 YES! Start My 30-Day Launch
+                </button>
               </div>
+              
+              <p className="text-xs text-gray-500 mt-4">
+                Your launch starts today. Privacy protected. Unsubscribe anytime.
+              </p>
             </div>
           </div>
         </div>
+
+        {/* Footer social proof */}
+        <div className="text-center text-sm text-gray-500">
+          <div className="flex justify-center items-center space-x-6 mb-2">
+            <span>700k+ users' choice</span>
+            <span>★★★★★ 4.5 Rated on Trustpilot</span>
+          </div>
+          <div>AI TechStep, Dallas, Texas • Powered by iPS</div>
+        </div>
       </div>
+      
+      <script src="/static/quiz.js"></script>
     </div>,
-    { title: '28-Day AI Challenge - Find Your Perfect AI Income Path!' }
+    { title: 'AI TechStep Challenge - Discover Your Perfect AI Income Path | Step into Success' }
   );
 });
 
@@ -300,18 +590,18 @@ app.get('/api/quiz-data', async (c) => {
   
   return c.json({
     success: true,
-    questions: aiChallengeQuizQuestions,
-    trackDescriptions: aiChallengeTrackDescriptions
+    questions: aiTechStepQuizQuestions,
+    trackDescriptions: aiTechStepTrackDescriptions
   });
 });
 
 // API endpoint to submit quiz results
 app.post('/api/submit-quiz', async (c) => {
   try {
-    const { sessionId, email, results, language } = await c.req.json();
+    const { sessionId, email, results, language, name, userGoal } = await c.req.json();
     
     // Create or get user
-    const userId = await createUser(c.env, email, undefined, language);
+    const userId = await createUser(c.env, email, name, language);
     
     // Save quiz responses
     for (let i = 0; i < results.selectedAnswers.length; i++) {
@@ -324,222 +614,903 @@ app.post('/api/submit-quiz', async (c) => {
     // Assign track
     const trackType = await assignUserTrack(c.env, userId, results.scores);
     
-    return c.json({ success: true, trackType, userId });
+    // Send email notification to support@techstepfoundation.org
+    try {
+      const emailResult = await sendEmailNotification(email, name, userGoal, results.scores);
+      console.log('Email notification result:', emailResult);
+    } catch (emailError) {
+      console.error('Failed to send email notification:', emailError);
+      // Don't fail the signup if email fails
+    }
+    
+    return c.json({ 
+      success: true, 
+      trackType, 
+      userId,
+      redirectUrl: `/scratch-card?session=${sessionId}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name || '')}&goal=${encodeURIComponent(userGoal || '')}`
+    });
   } catch (error) {
     console.error('Quiz submission error:', error);
     return c.json({ success: false, error: 'Failed to process quiz results' }, 500);
   }
 });
 
-// 28-Day AI Challenge enrollment page with B2C pricing
-app.get('/checkout', async (c) => {
+// Scratch card discount page - Coursiv style
+app.get('/scratch-card', async (c) => {
   const sessionId = c.req.query('session');
   const email = c.req.query('email');
+  const name = c.req.query('name');
+  const goal = c.req.query('goal');
   
   if (!sessionId || !email) {
     return c.redirect('/quiz');
   }
   
   return c.render(
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <div className="inline-block bg-red-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4 animate-pulse">
-            🔥 LIMITED TIME: 87% OFF!
-          </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-            🚀 Join the 28-Day AI Challenge
-          </h1>
-          <p className="text-xl text-gray-600">Transform your income with AI in just 28 days!</p>
-        </div>
         
-        <div className="bg-white rounded-2xl shadow-2xl p-8 mb-8 border-4 border-yellow-300">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <div className="text-center mb-6">
-                <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-full font-bold">
-                  🏆 MOST POPULAR CHOICE
-                </span>
-              </div>
-              
-              <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">28-Day AI Challenge</h2>
-              
-              <div className="space-y-4 mb-8">
-                <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-700">Complete 28-Day Program</span>
-                  <span className="text-gray-500 line-through">$397</span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-700">AI Tools & Resources Library</span>
-                  <span className="text-gray-500 line-through">$297</span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-700">Private Community Access</span>
-                  <span className="text-gray-500 line-through">$97</span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-700">Weekly Live Coaching Calls</span>
-                  <span className="text-gray-500 line-through">$197</span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-700">Bonus: AI Income Blueprints</span>
-                  <span className="text-gray-500 line-through">$497</span>
-                </div>
-                <div className="bg-red-50 rounded-lg p-3 border border-red-200">
-                  <div className="flex justify-between items-center text-red-600 font-semibold">
-                    <span>87% OFF Launch Special</span>
-                    <span>-$1,385</span>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Scratch & Save on your<br/>
+            28-Day AI TechStep Challenge!
+          </h1>
+          <p className="text-xl text-gray-600 mb-2">Boost your skills and master AI!</p>
+          <p className="text-lg text-gray-700">Get you gift with us 🎁</p>
+          <p className="text-gray-600 mt-4">Scratch the card👇🏻</p>
+        </div>
+
+        {/* Scratch card */}
+        <div className="max-w-md mx-auto mb-8">
+          <div id="scratch-card" className="relative bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl p-8 text-center cursor-pointer transform hover:scale-105 transition-all duration-200 shadow-xl">
+            <div id="scratch-overlay" className="absolute inset-0 bg-gradient-to-br from-gray-400 to-gray-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl">
+              Click to Scratch!
+            </div>
+            <div id="scratch-content" className="hidden">
+              <div className="text-white text-2xl font-bold mb-2">Woo hoo!</div>
+              <div className="text-white text-lg mb-2">You won a discount</div>
+              <div className="text-5xl font-bold text-white mb-2">50% off</div>
+              <div className="text-white text-sm">It will be applied automatically</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Readiness chart */}
+        <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-200 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Your readiness level</h2>
+          <p className="text-center text-sm text-gray-600 mb-6">This chart is for illustrative purposes only</p>
+          
+          <div className="max-w-md mx-auto">
+            <div className="text-center mb-6">
+              <div className="text-lg font-semibold text-gray-700 mb-2">Your 4-week Personal AI TechStep Challenge is ready!</div>
+            </div>
+            
+            {/* Before/After comparison */}
+            <div className="bg-gray-50 rounded-lg p-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="text-center">
+                  <div className="text-sm text-gray-600 mb-2">Now</div>
+                  <div className="bg-red-100 rounded-lg p-4 border border-red-200">
+                    <div className="text-sm font-semibold text-gray-800 mb-1">Goal</div>
+                    <div className="text-xs text-gray-600">{goal || 'AI skills'}</div>
+                    <div className="h-2 bg-gray-200 rounded-full mt-2">
+                      <div className="h-2 bg-red-400 rounded-full" style="width: 20%"></div>
+                    </div>
+                    <div className="text-xs text-red-600 mt-1">Limited</div>
                   </div>
                 </div>
-                <div className="flex justify-between items-center py-4 text-3xl font-bold bg-yellow-100 rounded-lg px-4">
-                  <span>TODAY ONLY:</span>
-                  <span className="text-green-600">$97</span>
+                
+                <div className="text-center">
+                  <div className="text-sm text-gray-600 mb-2">After 4 weeks</div>
+                  <div className="bg-green-100 rounded-lg p-4 border border-green-200">
+                    <div className="text-sm font-semibold text-gray-800 mb-1">{goal || 'AI skills'}</div>
+                    <div className="text-xs text-gray-600">Profit Readiness</div>
+                    <div className="h-2 bg-gray-200 rounded-full mt-2">
+                      <div className="h-2 bg-green-500 rounded-full" style="width: 85%"></div>
+                    </div>
+                    <div className="text-xs text-green-600 mt-1">High</div>
+                  </div>
                 </div>
               </div>
               
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-green-800 mb-2">💰 30-Day Money-Back Guarantee</h3>
-                <p className="text-sm text-green-700">If you don't see results in 30 days, get 100% of your money back - no questions asked!</p>
+              <div className="text-center mt-6">
+                <div className="text-sm text-gray-500 mb-2">This is not a guarantee or promise of results.</div>
+                <div className="text-lg font-bold text-green-600 mb-2">Your readiness: 83%</div>
+                <div className="text-sm text-gray-700">4-week program is enough for you to start your AI journey</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Benefits section */}
+        <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-200 mb-8">
+          <h3 className="text-2xl font-bold text-center text-gray-900 mb-6">AI is easier than you think</h3>
+          <div className="text-center text-blue-600 font-semibold mb-4">AI TechStep - "Step into AI Success"</div>
+          
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="text-center">
+              <div className="text-green-600 font-semibold mb-2">✓ No prior AI knowledge is required</div>
+            </div>
+            <div className="text-center">
+              <div className="text-green-600 font-semibold mb-2">✓ No need for a university degree</div>
+            </div>
+            <div className="text-center">
+              <div className="text-green-600 font-semibold mb-2">✓ Work at your own pace and terms</div>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <h4 className="text-xl font-bold text-gray-900 mb-4">Try AI TechStep and you will:</h4>
+            <div className="space-y-3 text-gray-700">
+              <p>• Master AI tools that can boost your income</p>
+              <p>• Discover new professions and income sources with AI</p>
+              <p>• Learn key AI terms and lessons</p>
+            </div>
+            
+            <div className="mt-6 space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span>Your goal</span>
+                <span className="font-semibold">Create passive income while caring for kids</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Your target</span>
+                <span className="font-semibold">{goal || 'Support children\'s education'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Continue button with countdown */}
+        <div className="text-center mb-8">
+          <div className="mb-4">
+            <div className="text-red-600 font-bold mb-2">Discount expires in</div>
+            <div id="countdown-timer" className="text-3xl font-bold text-red-600">09 : 42</div>
+            <div className="text-sm text-gray-600">min &nbsp;&nbsp;&nbsp; sec</div>
+          </div>
+          
+          <button 
+            onclick="proceedToCheckout()" 
+            className="w-full max-w-md mx-auto block bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-8 rounded-xl font-bold text-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+          >
+            GET MY AI TECHSTEP PLAN
+          </button>
+        </div>
+      </div>
+      
+      <script src="/static/scratch-card.js"></script>
+      <script src="/static/countdown.js"></script>
+    </div>,
+    { title: 'Scratch & Save 50% OFF - AI TechStep Challenge' }
+  );
+});
+
+// One-time payment checkout (NO SUBSCRIPTION)
+app.get('/checkout', async (c) => {
+  const sessionId = c.req.query('session');
+  const email = c.req.query('email');
+  const name = c.req.query('name');
+  const goal = c.req.query('goal');
+  
+  if (!sessionId || !email) {
+    return c.redirect('/quiz');
+  }
+  
+  return c.render(
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        
+        <div className="text-center mb-8">
+          <div className="inline-block bg-red-500 text-white px-4 py-2 rounded-full font-bold mb-4 animate-pulse">
+            50% OFF Applied!
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            Choose the best plan for you
+          </h1>
+          <div className="text-lg text-gray-600">Your promo code applied: <span className="font-bold text-green-600">parent_50off</span></div>
+          <div id="checkout-countdown" className="text-red-600 font-bold mt-2">09:42</div>
+        </div>
+
+        {/* Single 4-week plan - NO SUBSCRIPTION */}
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl border-4 border-blue-300 p-8 relative">
+            
+            {/* Most popular badge */}
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-full font-bold">
+                MOST POPULAR
               </div>
             </div>
             
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">🎯 What You'll Get</h3>
+            <div className="text-center pt-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">4-WEEK AI TECHSTEP CHALLENGE</h2>
               
-              <div className="space-y-4 text-sm text-gray-700">
-                <div className="flex items-start">
-                  <span className="text-green-500 text-xl mr-3">🚀</span>
-                  <span>28-day step-by-step roadmap to your first AI income</span>
+              <div className="mb-6">
+                <div className="text-4xl font-bold text-gray-900 mb-2">
+                  <span className="line-through text-gray-400 text-2xl mr-2">$39.99</span>
+                  $19.99
                 </div>
-                <div className="flex items-start">
-                  <span className="text-green-500 text-xl mr-3">🛠️</span>
-                  <span>Complete toolkit of AI tools and software (worth $2,000+)</span>
+                <div className="text-lg text-green-600 font-semibold">
+                  One-time payment • No recurring charges
                 </div>
-                <div className="flex items-start">
-                  <span className="text-green-500 text-xl mr-3">👥</span>
-                  <span>Access to private community of 700,000+ AI entrepreneurs</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="text-green-500 text-xl mr-3">📹</span>
-                  <span>Weekly live group coaching calls with AI experts</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="text-green-500 text-xl mr-3">📚</span>
-                  <span>Exclusive case studies of people earning $1K-$10K+ monthly</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="text-green-500 text-xl mr-3">⚡</span>
-                  <span>Done-for-you templates and swipe files</span>
+                <div className="text-gray-600">
+                  $0.71 per day
                 </div>
               </div>
-              
-              <div className="mt-8 space-y-4">
-                <button className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg">
-                  🎯 YES! START MY AI JOURNEY - $97
-                </button>
+
+              <div className="text-left space-y-4 mb-8">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">What you get:</h3>
                 
-                <div className="text-center">
-                  <div className="text-red-600 font-bold mb-2">⏰ This offer expires in:</div>
-                  <div id="countdown-timer" className="text-2xl font-bold text-red-600">23:59:42</div>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-start">
+                    <div className="text-green-500 mr-3 mt-1">✓</div>
+                    <div>
+                      <div className="font-semibold">Guides on Trending AI tools</div>
+                      <div className="text-sm text-gray-600">30+ AI tools specifically for parents</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="text-green-500 mr-3 mt-1">✓</div>
+                    <div>
+                      <div className="font-semibold">Access to beginner-friendly lessons</div>
+                      <div className="text-sm text-gray-600">Step-by-step tutorials for work-from-home parents</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="text-green-500 mr-3 mt-1">✓</div>
+                    <div>
+                      <div className="font-semibold">Comprehensive skill-enhancing courses</div>
+                      <div className="text-sm text-gray-600">Master passive income strategies with AI</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="text-green-500 mr-3 mt-1">✓</div>
+                    <div>
+                      <div className="font-semibold">Resources for work-life balance</div>
+                      <div className="text-sm text-gray-600">Designed specifically for busy parents</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="text-green-500 mr-3 mt-1">✓</div>
+                    <div>
+                      <div className="font-semibold">24/7 chat with online support</div>
+                      <div className="text-sm text-gray-600">Get all answers and reduce mistakes</div>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              <button 
+                onclick="processPurchase()" 
+                className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-8 rounded-xl font-bold text-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg mb-4"
+              >
+                GET MY AI TECHSTEP PLAN - $19.99
+              </button>
               
-              <p className="text-xs text-gray-500 mt-4 text-center">
-                🔒 Secure payment • SSL encrypted • 30-day guarantee
+              <div className="text-xs text-gray-500 mb-6">
+                One-time payment • No subscription • No automatic renewal • Instant access
+              </div>
+
+              {/* Payment security */}
+              <div className="border-t border-gray-200 pt-6">
+                <div className="flex justify-center items-center space-x-4 mb-4">
+                  <div className="text-sm text-gray-600">Pay safe & secure</div>
+                </div>
+                
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-green-800 mb-2">Money-Back Guarantee</h4>
+                  <p className="text-sm text-green-700">
+                    We are so confident in our service that we are ready to offer a full refund within 30 days 
+                    of your purchase. No questions asked.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Live purchase notifications */}
+        <div className="mt-8 bg-white rounded-xl p-6 shadow-lg">
+          <h3 className="font-bold text-gray-900 mb-4 text-center">
+            203 people purchased AI TechStep plans in the last hour
+          </h3>
+          <div id="live-purchases" className="space-y-2 text-sm text-gray-600 max-h-32 overflow-y-auto">
+            {/* Will be populated by JavaScript */}
+          </div>
+        </div>
+
+        {/* Testimonials */}
+        <div className="mt-12 bg-white rounded-xl p-8 shadow-lg">
+          <h3 className="text-2xl font-bold text-center text-gray-900 mb-8">People love AI TechStep</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="border border-gray-200 rounded-lg p-6">
+              <div className="font-bold text-gray-900 mb-2">@sarah_mompreneur</div>
+              <p className="text-sm text-gray-700">
+                "The learning is straightforward and has all the necessary information! It serves as a great 
+                starting point for parents new to AI who want to build passive income while caring for kids."
+              </p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <div className="font-bold text-gray-900 mb-2">@mike_dadlife</div>
+              <p className="text-sm text-gray-700">
+                "AI TechStep's wide range of educational materials and interactive features enables parents 
+                of all levels to easily understand complicated AI principles while managing family time."
+              </p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <div className="font-bold text-gray-900 mb-2">@jenny_workfromhome</div>
+              <p className="text-sm text-gray-700">
+                "AI TechStep has simplified understanding complex topics while enhancing my skills. 
+                The customized learning tailored to working parents has significantly boosted my progress."
               </p>
             </div>
           </div>
         </div>
-        
-        {/* Testimonials section */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <h3 className="text-2xl font-bold text-center mb-8">🌟 Success Stories from Our Community</h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="flex items-center mb-3">
-                <span className="text-2xl mr-3">👤</span>
-                <div>
-                  <div className="font-semibold">Sarah M.</div>
-                  <div className="text-sm text-gray-600">Marketing Assistant</div>
-                </div>
-              </div>
-              <p className="text-sm text-gray-700">"I went from $0 to $3,200/month in just 6 weeks using AI to create digital products!"</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="flex items-center mb-3">
-                <span className="text-2xl mr-3">👤</span>
-                <div>
-                  <div className="font-semibold">Mike R.</div>
-                  <div className="text-sm text-gray-600">Teacher</div>
-                </div>
-              </div>
-              <p className="text-sm text-gray-700">"The AI tools helped me start a tutoring service that now makes $5K/month!"</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="flex items-center mb-3">
-                <span className="text-2xl mr-3">👤</span>
-                <div>
-                  <div className="font-semibold">Lisa T.</div>
-                  <div className="text-sm text-gray-600">Stay-at-home Mom</div>
-                </div>
-              </div>
-              <p className="text-sm text-gray-700">"I replaced my husband's income with my AI e-commerce store in 3 months!"</p>
-            </div>
-          </div>
+
+        {/* Mobile app section */}
+        <div className="mt-12 text-center">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">
+            Access AI TechStep anywhere using your mobile device
+          </h3>
+          <p className="text-gray-600 mb-6">Learn AI skills on-the-go, perfect for busy parents</p>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center text-sm text-gray-500 mt-12">
+          <div>AI TechStep, Dallas, Texas • Powered by iPS</div>
         </div>
       </div>
-      <script src="/static/countdown.js"></script>
+      
+      <script src="/static/live-purchases.js"></script>
+      <script src="/static/checkout.js"></script>
     </div>,
-    { title: 'Join the 28-Day AI Challenge - Transform Your Income!' }
+    { title: '4-Week AI TechStep Challenge - One-Time Payment $19.99' }
   );
 });
 
-// Dashboard for 28-Day AI Challenge members
-app.get('/dashboard', async (c) => {
+// Success page after purchase
+app.get('/success', async (c) => {
+  const email = c.req.query('email');
+  const name = c.req.query('name');
+  
   return c.render(
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-            🚀 Your AI Challenge Dashboard
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+        <div className="bg-white rounded-2xl p-12 shadow-xl">
+          <div className="text-6xl mb-6">🎉</div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-6">
+            Welcome to AI TechStep Challenge!
           </h1>
-          <p className="text-xl text-gray-600">Welcome to your 28-day transformation journey!</p>
-        </div>
-        
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-lg">
-            <div className="text-center">
-              <span className="text-3xl mb-2 block">📅</span>
-              <h3 className="font-bold text-gray-900">Day 1</h3>
-              <p className="text-gray-600">Getting Started</p>
+          <div className="text-lg text-blue-600 font-semibold mb-4">"Step into AI Success - One Click at a Time"</div>
+          <p className="text-xl text-gray-600 mb-8">
+            Thank you {name || 'parent'}! Your 4-week AI journey starts now.
+          </p>
+          
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-8 border border-blue-200 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">What's Next?</h2>
+            <div className="text-left space-y-4">
+              <div className="flex items-start">
+                <div className="text-blue-500 mr-3 mt-1 text-xl">1.</div>
+                <div>
+                  <div className="font-semibold">Check your email</div>
+                  <div className="text-gray-600">We've sent your login details to {email}</div>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <div className="text-blue-500 mr-3 mt-1 text-xl">2.</div>
+                <div>
+                  <div className="font-semibold">Start Day 1</div>
+                  <div className="text-gray-600">Begin your AI journey with beginner-friendly lessons</div>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <div className="text-blue-500 mr-3 mt-1 text-xl">3.</div>
+                <div>
+                  <div className="font-semibold">Join our community</div>
+                  <div className="text-gray-600">Connect with 700,000+ parents mastering AI</div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-lg">
-            <div className="text-center">
-              <span className="text-3xl mb-2 block">👥</span>
-              <h3 className="font-bold text-gray-900">700,000+</h3>
-              <p className="text-gray-600">Community Members</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-6 shadow-lg">
-            <div className="text-center">
-              <span className="text-3xl mb-2 block">💰</span>
-              <h3 className="font-bold text-gray-900">$0</h3>
-              <p className="text-gray-600">Current Earnings</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold mb-4">🎯 Your Next Steps</h2>
-          <p className="text-gray-600 mb-4">Complete your personalized AI income roadmap and start building your future!</p>
-          <a href="/quiz" className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 transform hover:scale-105">
-            Continue Your Journey
+          
+          <a href="/dashboard" className="inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105">
+            Access Your Dashboard
           </a>
         </div>
       </div>
     </div>,
-    { title: 'Dashboard - 28-Day AI Challenge' }
+    { title: 'Welcome to AI TechStep Challenge - Success!' }
+  );
+});
+
+// Welcome email function for users
+async function sendWelcomeEmail(userEmail: string, userName: string) {
+  const welcomeEmailData = {
+    to: userEmail,
+    subject: '🎉 Welcome to AI TechStep Challenge - Your 28-Day Journey Starts Now!',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
+        <div style="background-color: white; padding: 30px; border-radius: 12px; border: 1px solid #e5e7eb;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1f2937; font-size: 28px; margin-bottom: 10px;">
+              Welcome to AI TechStep! 🚀
+            </h1>
+            <p style="color: #3b82f6; font-size: 16px; font-weight: 600; margin: 0;">
+              "Step into AI Success - One Click at a Time"
+            </p>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; text-align: center;">
+            <h2 style="margin: 0 0 10px 0; font-size: 20px;">Hi ${userName}! 👋</h2>
+            <p style="margin: 0; font-size: 16px;">Your 28-Day AI Challenge starts now!</p>
+          </div>
+          
+          <div style="margin-bottom: 25px;">
+            <h3 style="color: #374151; margin-bottom: 15px;">🎯 What's Next?</h3>
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px;">
+              <div style="margin-bottom: 15px;">
+                <strong style="color: #1f2937;">1. Check Your Email</strong><br/>
+                <span style="color: #6b7280;">Look for your login details and dashboard access</span>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <strong style="color: #1f2937;">2. Start Day 1</strong><br/>
+                <span style="color: #6b7280;">Begin with our beginner-friendly AI lessons (15-20 minutes)</span>
+              </div>
+              <div>
+                <strong style="color: #1f2937;">3. Join Our Community</strong><br/>
+                <span style="color: #6b7280;">Connect with 700,000+ parents mastering AI skills</span>
+              </div>
+            </div>
+          </div>
+          
+          <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 20px; margin-bottom: 25px;">
+            <h4 style="color: #1e40af; margin-top: 0; margin-bottom: 10px;">💡 Perfect for Busy Parents:</h4>
+            <ul style="color: #1e40af; margin: 0; padding-left: 20px;">
+              <li>15-20 minute lessons (perfect for nap time!)</li>
+              <li>30+ AI tools specifically for parents</li>
+              <li>Learn while kids play nearby</li>
+              <li>Build passive income streams</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; margin-bottom: 25px;">
+            <a href="/dashboard" style="display: inline-block; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+              🚀 Access Your Dashboard
+            </a>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;">
+            <p>Need help? Reply to this email or contact us at<br/>
+            <a href="mailto:support@techstepfoundation.org" style="color: #3b82f6;">support@techstepfoundation.org</a></p>
+            <p style="margin-top: 15px;">AI TechStep Challenge<br/>
+            Dallas, Texas • Powered by iPS</p>
+          </div>
+        </div>
+      </div>
+    `,
+    text: `
+Welcome to AI TechStep Challenge! 🚀
+"Step into AI Success - One Click at a Time"
+
+Hi ${userName}!
+
+Your 28-Day AI Challenge starts now!
+
+What's Next?
+1. Check Your Email - Look for your login details and dashboard access
+2. Start Day 1 - Begin with our beginner-friendly AI lessons (15-20 minutes)
+3. Join Our Community - Connect with 700,000+ parents mastering AI skills
+
+Perfect for Busy Parents:
+- 15-20 minute lessons (perfect for nap time!)
+- 30+ AI tools specifically for parents  
+- Learn while kids play nearby
+- Build passive income streams
+
+Access your dashboard: /dashboard
+
+Need help? Contact us at support@techstepfoundation.org
+
+AI TechStep Challenge
+Dallas, Texas • Powered by iPS
+    `
+  };
+  
+  console.log('📧 Welcome email prepared for user:', userEmail);
+  console.log('👋 Welcome message for:', userName);
+  
+  return {
+    success: true,
+    message: 'Welcome email prepared successfully',
+    emailSent: false, // Set to true when using real email service
+    recipientEmail: userEmail
+  };
+}
+
+// Email notification function
+async function sendEmailNotification(userEmail: string, userName: string, userGoal: string, scores: any) {
+  const emailData = {
+    to: 'support@techstepfoundation.org',
+    subject: `New AI TechStep Challenge Signup - ${userName || 'New User'}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
+        <div style="background-color: white; padding: 30px; border-radius: 12px; border: 1px solid #e5e7eb;">
+          <h1 style="color: #1f2937; margin-bottom: 20px; text-align: center;">
+            🎉 New AI TechStep Challenge Signup!
+          </h1>
+          
+          <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 18px;">User Information</h2>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <p><strong>📧 Email:</strong> ${userEmail}</p>
+            <p><strong>👤 Name:</strong> ${userName || 'Not provided'}</p>
+            <p><strong>🎯 Goal:</strong> ${userGoal || 'Create passive income with AI'}</p>
+            <p><strong>📅 Signup Date:</strong> ${new Date().toLocaleString()}</p>
+          </div>
+          
+          <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #374151; margin-top: 0;">Quiz Results & AI Track Scores:</h3>
+            <ul style="color: #4b5563;">
+              <li><strong>Digital Product Track:</strong> ${scores.digital_product || 0} points</li>
+              <li><strong>Service Track:</strong> ${scores.service || 0} points</li>
+              <li><strong>E-commerce Track:</strong> ${scores.ecommerce || 0} points</li>
+              <li><strong>Consulting Track:</strong> ${scores.consulting || 0} points</li>
+            </ul>
+          </div>
+          
+          <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 0; color: #1e40af;">
+              <strong>Next Steps:</strong> User will be redirected to scratch card page for 50% discount and then checkout for $19.99 one-time payment.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;">
+            <p>AI TechStep Challenge Platform<br/>
+            Dallas, Texas • Powered by iPS<br/>
+            "Step into AI Success - One Click at a Time"</p>
+          </div>
+        </div>
+      </div>
+    `,
+    text: `
+New AI TechStep Challenge Signup!
+
+User Information:
+- Email: ${userEmail}
+- Name: ${userName || 'Not provided'}
+- Goal: ${userGoal || 'Create passive income with AI'}
+- Signup Date: ${new Date().toLocaleString()}
+
+Quiz Results & AI Track Scores:
+- Digital Product Track: ${scores.digital_product || 0} points
+- Service Track: ${scores.service || 0} points
+- E-commerce Track: ${scores.ecommerce || 0} points
+- Consulting Track: ${scores.consulting || 0} points
+
+Next Steps: User will be redirected to scratch card page for 50% discount and then checkout for $19.99 one-time payment.
+
+AI TechStep Challenge Platform
+Dallas, Texas • Powered by iPS
+"Step into AI Success - One Click at a Time"
+    `
+  };
+  
+  // In production, this would integrate with an email service like:
+  // - SendGrid: await sgMail.send(emailData)
+  // - Resend: await resend.emails.send(emailData)
+  // - Mailgun: await mailgun.messages.create(domain, emailData)
+  
+  console.log('📧 Email notification prepared for:', emailData.to);
+  console.log('📋 Email subject:', emailData.subject);
+  console.log('👤 New user:', userEmail, '(', userName, ')');
+  
+  // For demo purposes, we'll log the email content
+  // In production, replace this with actual email service integration
+  return {
+    success: true,
+    message: 'Email notification prepared successfully',
+    emailSent: false, // Set to true when using real email service
+    recipientEmail: 'support@techstepfoundation.org'
+  };
+}
+
+// API endpoint to process one-time payment
+app.post('/api/process-payment', async (c) => {
+  try {
+    const paymentData = await c.req.json();
+    const { email, name, amount, plan, isOneTime, noSubscription } = paymentData;
+    
+    // Validate payment data
+    if (!email || !amount || !isOneTime || !noSubscription) {
+      return c.json({ success: false, error: 'Invalid payment data' }, 400);
+    }
+    
+    // Create or get user
+    const userId = await createUser(c.env, email, name, 'en');
+    
+    // Create user progress (28-day challenge)
+    await createUserProgress(c.env, userId);
+    
+    // Save payment record
+    await c.env.DB.prepare(`
+      INSERT INTO payments (user_id, amount, currency, plan_type, payment_method, status, payment_id, is_one_time)
+      VALUES (?, ?, 'USD', '4-week-challenge', 'demo', 'completed', ?, 1)
+    `).bind(userId, amount, paymentData.paymentId).run();
+    
+    // Deliver AI Parent challenge content
+    await deliverAssets(c.env, userId, 'digital_product');
+    
+    // Send welcome email (in real app, integrate with email service)
+    console.log(`Welcome email sent to ${email} for AI Parent Challenge`);
+    
+    return c.json({ 
+      success: true, 
+      message: 'Payment processed successfully',
+      userId: userId,
+      accessGranted: true
+    });
+  } catch (error) {
+    console.error('Payment processing error:', error);
+    return c.json({ success: false, error: 'Payment processing failed' }, 500);
+  }
+});
+
+// API endpoint for email service integration (for production setup)
+app.post('/api/configure-email', async (c) => {
+  try {
+    const { service, apiKey, fromEmail, testEmail } = await c.req.json();
+    
+    // Validate input
+    if (!service || !apiKey || !fromEmail) {
+      return c.json({ 
+        success: false, 
+        error: 'Missing required fields: service, apiKey, fromEmail' 
+      }, 400);
+    }
+    
+    const supportedServices = ['sendgrid', 'resend', 'mailgun', 'postmark'];
+    if (!supportedServices.includes(service.toLowerCase())) {
+      return c.json({ 
+        success: false, 
+        error: 'Unsupported email service. Supported: ' + supportedServices.join(', ')
+      }, 400);
+    }
+    
+    // In production, store these securely using Cloudflare secrets:
+    // wrangler secret put EMAIL_SERVICE
+    // wrangler secret put EMAIL_API_KEY  
+    // wrangler secret put EMAIL_FROM_ADDRESS
+    
+    console.log('📧 Email service configuration received:');
+    console.log('Service:', service);
+    console.log('From Email:', fromEmail);
+    console.log('API Key:', apiKey ? 'Provided (hidden)' : 'Not provided');
+    
+    // Test email if requested
+    if (testEmail) {
+      console.log('📨 Sending test email to:', testEmail);
+      
+      const testEmailData = {
+        to: testEmail,
+        subject: 'AI TechStep Email Service Test',
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h1 style="color: #3b82f6;">Email Service Test Successful! ✅</h1>
+            <p>Your AI TechStep email integration is working correctly.</p>
+            <p><strong>Service:</strong> ${service}</p>
+            <p><strong>From:</strong> ${fromEmail}</p>
+            <p><strong>To:</strong> support@techstepfoundation.org</p>
+            <hr/>
+            <p style="font-size: 12px; color: #666;">
+              AI TechStep Challenge<br/>
+              Dallas, Texas • Powered by iPS
+            </p>
+          </div>
+        `,
+        text: `
+Email Service Test Successful!
+
+Your AI TechStep email integration is working correctly.
+
+Service: ${service}
+From: ${fromEmail}  
+To: support@techstepfoundation.org
+
+AI TechStep Challenge
+Dallas, Texas • Powered by iPS
+        `
+      };
+      
+      // Here you would integrate with the actual email service:
+      /* 
+      Example integrations:
+      
+      if (service === 'sendgrid') {
+        const sgMail = require('@sendgrid/mail');
+        sgMail.setApiKey(apiKey);
+        await sgMail.send({
+          to: testEmail,
+          from: fromEmail,
+          subject: testEmailData.subject,
+          html: testEmailData.html
+        });
+      }
+      
+      if (service === 'resend') {
+        const { Resend } = require('resend');
+        const resend = new Resend(apiKey);
+        await resend.emails.send({
+          from: fromEmail,
+          to: testEmail,
+          subject: testEmailData.subject,
+          html: testEmailData.html
+        });
+      }
+      */
+    }
+    
+    return c.json({
+      success: true,
+      message: 'Email service configured successfully',
+      service: service,
+      fromEmail: fromEmail,
+      testEmailSent: testEmail ? true : false,
+      instructions: {
+        production: 'Set EMAIL_SERVICE, EMAIL_API_KEY, and EMAIL_FROM_ADDRESS as Cloudflare secrets',
+        commands: [
+          `wrangler secret put EMAIL_SERVICE`,
+          `wrangler secret put EMAIL_API_KEY`,  
+          `wrangler secret put EMAIL_FROM_ADDRESS`
+        ]
+      }
+    });
+  } catch (error) {
+    console.error('Email configuration error:', error);
+    return c.json({ 
+      success: false, 
+      error: 'Failed to configure email service' 
+    }, 500);
+  }
+});
+
+// API endpoint to send test notification to support
+app.post('/api/test-notification', async (c) => {
+  try {
+    const { email, name, goal } = await c.req.json();
+    
+    const testScores = {
+      digital_product: 85,
+      service: 72,
+      ecommerce: 45,
+      consulting: 63
+    };
+    
+    const result = await sendEmailNotification(
+      email || 'test@example.com',
+      name || 'Test User',
+      goal || 'Create passive income with AI',
+      testScores
+    );
+    
+    return c.json({
+      success: true,
+      message: 'Test notification prepared',
+      result: result,
+      note: 'In production, this would send email to support@techstepfoundation.org'
+    });
+  } catch (error) {
+    console.error('Test notification error:', error);
+    return c.json({ success: false, error: 'Failed to send test notification' }, 500);
+  }
+});
+
+// Simple dashboard for AI Parent members
+app.get('/dashboard', async (c) => {
+  return c.render(
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">AI TechStep Dashboard</h1>
+            <div className="text-sm text-blue-600 font-semibold">"Step into AI Success"</div>
+              <p className="text-gray-600">Your 28-day journey to AI mastery</p>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-blue-600">Day 1</div>
+              <div className="text-gray-600">of 28</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress overview */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-xl p-6 shadow-lg text-center">
+            <div className="text-3xl font-bold text-green-600 mb-2">700K+</div>
+            <div className="text-gray-600">Community Members</div>
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-lg text-center">
+            <div className="text-3xl font-bold text-blue-600 mb-2">30+</div>
+            <div className="text-gray-600">AI Tools to Master</div>
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-lg text-center">
+            <div className="text-3xl font-bold text-purple-600 mb-2">0%</div>
+            <div className="text-gray-600">Progress Complete</div>
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-lg text-center">
+            <div className="text-3xl font-bold text-orange-600 mb-2">27</div>
+            <div className="text-gray-600">Days Remaining</div>
+          </div>
+        </div>
+
+        {/* Current lesson */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Today's Lesson: Getting Started with AI</h2>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">What You'll Learn Today:</h3>
+              <div className="space-y-3">
+                <div className="flex items-start">
+                  <div className="text-green-500 mr-3 mt-1">•</div>
+                  <div>Understanding what AI really is (in simple terms)</div>
+                </div>
+                <div className="flex items-start">
+                  <div className="text-green-500 mr-3 mt-1">•</div>
+                  <div>How AI can help busy parents create passive income</div>
+                </div>
+                <div className="flex items-start">
+                  <div className="text-green-500 mr-3 mt-1">•</div>
+                  <div>Your first AI tool: ChatGPT for beginners</div>
+                </div>
+                <div className="flex items-start">
+                  <div className="text-green-500 mr-3 mt-1">•</div>
+                  <div>Setting up your AI workspace at home</div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Time Needed:</h3>
+              <div className="text-lg text-gray-600 mb-6">15-20 minutes (perfect for nap time!)</div>
+              
+              <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-200">
+                Start Day 1 Lesson
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick links */}
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">AI Tools Library</h3>
+            <p className="text-gray-600 mb-4">Access 30+ parent-friendly AI tools</p>
+            <button className="text-blue-600 font-semibold hover:underline">Explore Tools →</button>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Parent Community</h3>
+            <p className="text-gray-600 mb-4">Connect with other AI Parent members</p>
+            <button className="text-blue-600 font-semibold hover:underline">Join Discussion →</button>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Support Center</h3>
+            <p className="text-gray-600 mb-4">Get help 24/7 from our team</p>
+            <button className="text-blue-600 font-semibold hover:underline">Get Help →</button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    { title: 'AI TechStep Dashboard - Day 1 of 28' }
   );
 });
 

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Test</title>
+</head>
+<body>
+    <div id="question-container" data-session-id="test" data-lang="en" data-initial-answer="yes">
+        <div id="question-text-container">
+            <h2 id="question-text"></h2>
+            <p id="question-subtitle" class="hidden"></p>
+        </div>
+        <div id="options-container"></div>
+        <div>
+            <button id="back-btn" onclick="previousQuestion()" disabled>← Back</button>
+            <button id="next-btn" onclick="nextQuestion()" disabled>Next →</button>
+        </div>
+    </div>
+    <div id="encouragement-container" class="hidden"></div>
+    <div id="ai-knowledge-encouragement" class="hidden"></div>
+    
+    <script>
+        // Test data structure
+        const testData = {
+            success: true,
+            questions: [
+                {
+                    id: 1,
+                    text: { en: "Test question?" },
+                    options: [
+                        { text: { en: "YES" }, value: 10, tracks: ["digital_product"] },
+                        { text: { en: "NO" }, value: 5, tracks: ["ecommerce"] }
+                    ]
+                }
+            ]
+        };
+        
+        // Simulate quiz initialization
+        let quizData = testData;
+        let selectedAnswers = [];
+        
+        function displayQuestion(index) {
+            const question = quizData.questions[index];
+            const questionText = document.getElementById('question-text');
+            questionText.textContent = (typeof question.text === 'object' ? question.text.en : question.text) || '';
+            console.log('Question displayed:', questionText.textContent);
+        }
+        
+        // Test the function
+        displayQuestion(0);
+        console.log('Quiz test completed successfully');
+    </script>
+</body>
+</html>

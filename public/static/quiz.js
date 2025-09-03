@@ -595,6 +595,75 @@ function showFinalStretchEncouragement() {
     showContainer('final-stretch-encouragement');
 }
 
+// Payment flow function
+async function proceedToPayment() {
+    console.log('Proceeding to payment...');
+    const emailInput = document.getElementById('user-email');
+    const nameInput = document.getElementById('user-name');
+    const paymentBtn = document.getElementById('payment-submit-btn');
+    
+    if (!emailInput || !emailInput.value.trim()) {
+        showError('Please enter your email address');
+        return;
+    }
+    
+    const email = emailInput.value.trim();
+    
+    // If name is hidden, show it first
+    if (nameInput && nameInput.classList.contains('hidden')) {
+        nameInput.classList.remove('hidden');
+        nameInput.focus();
+        paymentBtn.textContent = '💳 Continue to Secure Payment ($19.99)';
+        paymentBtn.onclick = proceedToPayment; // Keep the same function
+        return;
+    }
+    
+    const name = nameInput ? nameInput.value.trim() : '';
+    const userGoal = document.getElementById('user-goal')?.textContent || 'Create passive income with AI';
+    
+    paymentBtn.disabled = true;
+    paymentBtn.textContent = 'Processing...';
+    
+    try {
+        const questionContainer = document.getElementById('question-container');
+        const sessionId = questionContainer.dataset.sessionId;
+        
+        // Submit quiz data first
+        const quizResponse = await fetch('/api/submit-quiz', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sessionId: sessionId,
+                email: email,
+                name: name,
+                userGoal: userGoal,
+                language: 'en',
+                results: {
+                    selectedAnswers: selectedAnswers,
+                    scores: userScores
+                }
+            })
+        });
+        
+        const result = await quizResponse.json();
+        console.log('Quiz submission result:', result);
+        
+        if (result.success) {
+            // Redirect to Stripe checkout instead of scratch card
+            window.location.href = `/payment?session=${sessionId}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&goal=${encodeURIComponent(userGoal)}`;
+        } else {
+            throw new Error('Quiz submission failed');
+        }
+    } catch (error) {
+        console.error('Error processing payment:', error);
+        showError('Unable to process payment. Please try again.');
+        paymentBtn.disabled = false;
+        paymentBtn.textContent = '🚀 Get My AI TechStep Challenge - $19.99';
+    }
+}
+
 // Global functions
 window.nextQuestion = nextQuestion;
 window.previousQuestion = previousQuestion;
@@ -602,6 +671,7 @@ window.continueQuiz = continueQuiz;
 window.continueToPersonalization = continueToPersonalization;
 window.showEmailForm = showEmailForm;
 window.submitEmail = submitEmail;
+window.proceedToPayment = proceedToPayment;
 window.showMidQuizEncouragement = showMidQuizEncouragement;
 window.showProgressEncouragement = showProgressEncouragement;
 window.showFinalStretchEncouragement = showFinalStretchEncouragement;

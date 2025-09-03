@@ -503,12 +503,16 @@ app.get('/quiz', async (c) => {
           {/* Email collection form - Action-oriented */}
           <div id="email-form-container" className="hidden text-center py-8">
             <div className="max-w-md mx-auto">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h3 className="text-xl font-bold text-blue-900 mb-2">
-                  🎯 Ready to Start Your Launch?
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 mb-6">
+                <h3 className="text-xl font-bold text-green-900 mb-2">
+                  🎯 Secure Your AI TechStep Challenge
                 </h3>
-                <p className="text-blue-800 text-sm">
-                  Get your personalized templates + Week 1 action plan delivered instantly
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-green-800 text-sm">One-time payment • No subscription</span>
+                  <span className="text-2xl font-bold text-green-700">$19.99</span>
+                </div>
+                <p className="text-green-700 text-sm">
+                  Your personalized launch plan + templates delivered instantly after payment
                 </p>
               </div>
               
@@ -553,11 +557,11 @@ app.get('/quiz', async (c) => {
                   required 
                 />
                 <button 
-                  onclick="submitEmail()" 
+                  onclick="proceedToPayment()" 
                   className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-6 rounded-lg font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg"
-                  id="email-submit-btn"
+                  id="payment-submit-btn"
                 >
-                  🚀 YES! Start My 30-Day Launch
+                  🚀 Get My AI TechStep Challenge - $19.99
                 </button>
               </div>
               
@@ -784,6 +788,153 @@ app.get('/scratch-card', async (c) => {
   );
 });
 
+// Stripe payment page (replaces scratch card for direct conversion)
+app.get('/payment', async (c) => {
+  const sessionId = c.req.query('session');
+  const email = c.req.query('email');
+  const name = c.req.query('name');
+  const goal = c.req.query('goal');
+  
+  if (!sessionId || !email) {
+    return c.redirect('/quiz');
+  }
+  
+  return c.render(
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        
+        <div className="text-center mb-8">
+          <div className="bg-green-500 text-white px-6 py-2 rounded-full font-bold mb-4 inline-block animate-pulse">
+            🎯 SECURE YOUR SPOT NOW
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Ready to Launch Your First $1K AI Project?
+          </h1>
+          <p className="text-xl text-gray-600 mb-2">Join 700,000+ parents who've already started</p>
+          <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-4 max-w-md mx-auto">
+            <p className="text-yellow-800 font-semibold">⚡ Limited Time: Only $19.99 (Reg. $49.99)</p>
+          </div>
+        </div>
+
+        {/* Payment Card */}
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl border-4 border-green-300 p-8 relative">
+            
+            {/* Most popular badge */}
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-2 rounded-full font-bold">
+                🚀 LAUNCH READY
+              </div>
+            </div>
+            
+            <div className="text-center pt-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">AI TechStep Challenge</h2>
+              
+              <div className="mb-6">
+                <div className="text-5xl font-bold text-gray-900 mb-2">
+                  <span className="line-through text-gray-400 text-2xl mr-2">$49.99</span>
+                  $19.99
+                </div>
+                <div className="text-lg text-green-600 font-semibold">
+                  One-time payment • No recurring charges • Instant access
+                </div>
+              </div>
+
+              <div className="text-left space-y-4 mb-8">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">Your Complete Launch System:</h3>
+                
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-start">
+                    <div className="text-green-500 mr-3 mt-1">🎯</div>
+                    <div>
+                      <div className="font-semibold">Your Personalized Launch Roadmap</div>
+                      <div className="text-sm text-gray-600">30-day step-by-step plan tailored to your quiz results</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="text-green-500 mr-3 mt-1">🛠️</div>
+                    <div>
+                      <div className="font-semibold">AI Templates & Tools Library</div>
+                      <div className="text-sm text-gray-600">30+ ready-to-use templates for immediate implementation</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="text-green-500 mr-3 mt-1">👥</div>
+                    <div>
+                      <div className="font-semibold">Creator Community Access</div>
+                      <div className="text-sm text-gray-600">Join 700K+ parent entrepreneurs</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="text-green-500 mr-3 mt-1">⚡</div>
+                    <div>
+                      <div className="font-semibold">Week 1 Quick-Start Actions</div>
+                      <div className="text-sm text-gray-600">15-minute daily tasks to launch immediately</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="text-green-500 mr-3 mt-1">💬</div>
+                    <div>
+                      <div className="font-semibold">24/7 Support Access</div>
+                      <div className="text-sm text-gray-600">Get help whenever you need it</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stripe Payment Form */}
+              <div id="stripe-payment-element" className="mb-6">
+                {/* Stripe Elements will be inserted here */}
+              </div>
+
+              <button 
+                id="stripe-submit" 
+                className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-8 rounded-xl font-bold text-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg mb-4"
+              >
+                🚀 Secure My AI TechStep Challenge - $19.99
+              </button>
+              
+              <div className="text-xs text-gray-500 mb-6">
+                ✅ Secure SSL encryption • 💳 All major cards accepted • 🔒 No subscription
+              </div>
+
+              {/* Payment security */}
+              <div className="border-t border-gray-200 pt-6">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-green-800 mb-2">💝 30-Day Money-Back Guarantee</h4>
+                  <p className="text-sm text-green-700">
+                    Try the AI TechStep Challenge risk-free. If you're not completely satisfied within 30 days, 
+                    we'll refund every penny. No questions asked.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Live purchase notifications */}
+        <div className="mt-8 bg-white rounded-xl p-6 shadow-lg max-w-2xl mx-auto">
+          <h3 className="font-bold text-gray-900 mb-4 text-center">
+            ⚡ 47 people joined AI TechStep in the last hour
+          </h3>
+          <div id="live-purchases-payment" className="space-y-2 text-sm text-gray-600 max-h-32 overflow-y-auto">
+            {/* Will be populated by JavaScript */}
+          </div>
+        </div>
+      </div>
+      
+      <script src="https://js.stripe.com/v3/"></script>
+      <script src="/static/stripe-payment.js"></script>
+      <script src="/static/live-purchases.js"></script>
+    </div>,
+    { title: 'Secure Payment - AI TechStep Challenge $19.99' }
+  );
+});
+
 // One-time payment checkout (NO SUBSCRIPTION)
 app.get('/checkout', async (c) => {
   const sessionId = c.req.query('session');
@@ -975,6 +1126,30 @@ app.get('/checkout', async (c) => {
 app.get('/success', async (c) => {
   const email = c.req.query('email');
   const name = c.req.query('name');
+  const sessionId = c.req.query('session');
+  const paymentIntentId = c.req.query('payment_intent');
+  
+  // Process the successful payment
+  if (paymentIntentId && email) {
+    try {
+      const response = await fetch(`${c.req.url.split('/success')[0]}/api/process-payment-success`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentIntentId,
+          sessionId,
+          email,
+          name: name || '',
+          goal: 'Create passive income with AI'
+        })
+      });
+      
+      const result = await response.json();
+      console.log('Payment processing result:', result);
+    } catch (error) {
+      console.error('Error processing payment success:', error);
+    }
+  }
   
   return c.render(
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
@@ -1218,6 +1393,141 @@ Dallas, Texas • Powered by iPS
     recipientEmail: 'support@techstepfoundation.org'
   };
 }
+
+// API endpoint to create Stripe payment intent
+app.post('/api/create-payment-intent', async (c) => {
+  try {
+    const { amount, currency, metadata } = await c.req.json();
+    
+    // Validate input
+    if (!amount || amount !== 1999) { // Must be exactly $19.99
+      return c.json({ success: false, error: 'Invalid amount' }, 400);
+    }
+    
+    // In production, you'll need to set STRIPE_SECRET_KEY as Cloudflare secret
+    const stripeSecretKey = c.env.STRIPE_SECRET_KEY;
+    const stripePublishableKey = c.env.STRIPE_PUBLISHABLE_KEY;
+    
+    if (!stripeSecretKey || !stripePublishableKey) {
+      console.log('⚠️ Stripe keys not configured. Using demo mode.');
+      
+      // Return demo keys for development
+      return c.json({
+        success: true,
+        client_secret: 'pi_demo_client_secret_for_development',
+        publishable_key: 'pk_test_demo_key_for_development',
+        demo_mode: true,
+        message: 'Demo mode - Configure Stripe keys for production'
+      });
+    }
+    
+    // Create payment intent with Stripe API
+    const paymentIntentResponse = await fetch('https://api.stripe.com/v1/payment_intents', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${stripeSecretKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        'amount': amount.toString(),
+        'currency': currency,
+        'automatic_payment_methods[enabled]': 'true',
+        'metadata[product]': metadata.product || 'AI TechStep Challenge',
+        'metadata[session]': metadata.session || '',
+        'metadata[email]': metadata.email || '',
+        'metadata[name]': metadata.name || '',
+        'metadata[goal]': metadata.goal || ''
+      })
+    });
+    
+    const paymentIntent = await paymentIntentResponse.json();
+    
+    if (!paymentIntentResponse.ok) {
+      throw new Error(paymentIntent.error?.message || 'Failed to create payment intent');
+    }
+    
+    return c.json({
+      success: true,
+      client_secret: paymentIntent.client_secret,
+      publishable_key: stripePublishableKey
+    });
+    
+  } catch (error) {
+    console.error('Payment intent creation error:', error);
+    return c.json({ 
+      success: false, 
+      error: 'Failed to initialize payment' 
+    }, 500);
+  }
+});
+
+// API endpoint to handle successful payments
+app.post('/api/process-payment-success', async (c) => {
+  try {
+    const { paymentIntentId, sessionId, email, name, goal } = await c.req.json();
+    
+    // Verify payment with Stripe (in production)
+    const stripeSecretKey = c.env.STRIPE_SECRET_KEY;
+    
+    if (stripeSecretKey && paymentIntentId !== 'pi_demo_client_secret_for_development') {
+      const paymentVerification = await fetch(`https://api.stripe.com/v1/payment_intents/${paymentIntentId}`, {
+        headers: {
+          'Authorization': `Bearer ${stripeSecretKey}`,
+        }
+      });
+      
+      const paymentIntent = await paymentVerification.json();
+      
+      if (!paymentVerification.ok || paymentIntent.status !== 'succeeded') {
+        return c.json({ success: false, error: 'Payment verification failed' }, 400);
+      }
+    }
+    
+    // Create or get user
+    const userId = await createUser(c.env, email, name, 'en');
+    
+    // Create user progress (28-day challenge)
+    await createUserProgress(c.env, userId);
+    
+    // Save payment record
+    await c.env.DB.prepare(`
+      INSERT INTO payments (user_id, amount, currency, plan_type, payment_method, status, payment_id, is_one_time)
+      VALUES (?, ?, 'USD', 'ai-techstep-challenge', 'stripe', 'completed', ?, 1)
+    `).bind(userId, 1999, paymentIntentId).run();
+    
+    // Send welcome email to user
+    try {
+      await sendWelcomeEmail(email, name);
+      console.log(`✅ Welcome email sent to ${email}`);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Don't fail the payment if email fails
+    }
+    
+    // Send notification email to support
+    try {
+      const dummyScores = { digital_product: 85, service: 72, ecommerce: 45, consulting: 63 };
+      await sendEmailNotification(email, name, goal, dummyScores);
+      console.log(`✅ Notification email sent to support@techstepfoundation.org`);
+    } catch (emailError) {
+      console.error('Failed to send notification email:', emailError);
+    }
+    
+    return c.json({ 
+      success: true, 
+      message: 'Payment processed successfully',
+      userId: userId,
+      accessGranted: true
+    });
+    
+  } catch (error) {
+    console.error('Payment processing error:', error);
+    return c.json({ 
+      success: false, 
+      error: 'Payment processing failed' 
+    }, 500);
+  }
+});
 
 // API endpoint to process one-time payment
 app.post('/api/process-payment', async (c) => {

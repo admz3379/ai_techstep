@@ -36,6 +36,8 @@ export const renderer = jsxRenderer(({ children, title }) => {
         
         {/* Main application scripts */}
         <script src="/static/app.js"></script>
+        <script src="/static/ai-profile-quiz.js"></script>
+        <script src="/static/pricing-modal.js"></script>
       </body>
     </html>
   )

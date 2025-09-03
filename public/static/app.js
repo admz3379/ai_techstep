@@ -1,5 +1,245 @@
 // AI Income Builder v1.0 - Frontend JavaScript
 
+// Mobile Showcase & Responsive Enhancements
+class MobileShowcase {
+  constructor() {
+    this.greetings = ['Hi', 'Hola', 'Bonjour', '你好', 'مرحبا', 'नमस्ते', 'こんにちは', '안녕하세요', 'Olá', 'Привет', 'Merhaba', 'سلام', 'Xin chào'];
+    this.currentGreetingIndex = 0;
+    this.init();
+  }
+
+  init() {
+    this.setupScrollToQuiz();
+    this.setupGlobalGreetings();
+    this.setupResponsiveEnhancements();
+    this.setupParallax();
+  }
+
+  setupScrollToQuiz() {
+    // Handle "See how it works" button click
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('scroll-to-quiz') || e.target.closest('.scroll-to-quiz')) {
+        e.preventDefault();
+        const quizSection = document.querySelector('.bg-white.rounded-2xl.shadow-lg');
+        if (quizSection) {
+          quizSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }
+    });
+  }
+
+  setupGlobalGreetings() {
+    const greetingElement = document.querySelector('.global-greeting-text');
+    if (!greetingElement) return;
+
+    setInterval(() => {
+      this.currentGreetingIndex = (this.currentGreetingIndex + 1) % this.greetings.length;
+      greetingElement.style.opacity = '0.5';
+      
+      setTimeout(() => {
+        greetingElement.textContent = `${this.greetings[this.currentGreetingIndex]} from our global community`;
+        greetingElement.style.opacity = '1';
+      }, 200);
+    }, 3000);
+  }
+
+  setupResponsiveEnhancements() {
+    // Enhanced touch interaction for mobile
+    if ('ontouchstart' in window) {
+      document.body.classList.add('touch-device');
+      
+      // Improve button interactions on touch devices
+      document.querySelectorAll('button, .btn-primary, .quiz-option').forEach(element => {
+        element.addEventListener('touchstart', function() {
+          this.style.transform = 'scale(0.98)';
+        });
+        
+        element.addEventListener('touchend', function() {
+          setTimeout(() => {
+            this.style.transform = '';
+          }, 100);
+        });
+      });
+    }
+  }
+
+  setupParallax() {
+    // Subtle parallax effect for desktop only
+    if (window.innerWidth >= 1024 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const phoneFrame = document.querySelector('.mobile-phone-frame');
+      if (phoneFrame) {
+        let ticking = false;
+        
+        const updateParallax = () => {
+          const scrolled = window.pageYOffset;
+          const parallax = scrolled * 0.01; // Very subtle 1% parallax
+          
+          phoneFrame.style.transform = `translateY(${parallax}px)`;
+          ticking = false;
+        };
+
+        const requestTick = () => {
+          if (!ticking) {
+            requestAnimationFrame(updateParallax);
+            ticking = true;
+          }
+        };
+
+        window.addEventListener('scroll', requestTick);
+      }
+    }
+  }
+}
+
+// Enhanced responsive utilities
+class ResponsiveUtils {
+  constructor() {
+    this.breakpoints = {
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280
+    };
+    this.init();
+  }
+
+  init() {
+    this.setupViewportHeightFix();
+    this.setupKeyboardHandling();
+    this.setupContainerSizing();
+  }
+
+  setupViewportHeightFix() {
+    // Fix viewport height issues on mobile
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(setVH, 100);
+    });
+  }
+
+  setupKeyboardHandling() {
+    // Handle virtual keyboard on mobile
+    if ('visualViewport' in window) {
+      const viewport = window.visualViewport;
+      const initialHeight = window.innerHeight;
+
+      const handleViewportChange = () => {
+        if (viewport.height < initialHeight * 0.75) {
+          // Keyboard is likely open
+          document.body.classList.add('keyboard-open');
+        } else {
+          document.body.classList.remove('keyboard-open');
+        }
+      };
+
+      viewport.addEventListener('resize', handleViewportChange);
+    }
+  }
+
+  setupContainerSizing() {
+    // Dynamic container sizing based on screen width
+    const updateContainerSizes = () => {
+      const containers = document.querySelectorAll('.max-w-4xl, .max-w-7xl');
+      const screenWidth = window.innerWidth;
+      
+      containers.forEach(container => {
+        if (screenWidth >= this.breakpoints.xl) {
+          container.style.maxWidth = '1280px';
+        } else if (screenWidth >= this.breakpoints.lg) {
+          container.style.maxWidth = '1200px';
+        } else {
+          container.style.maxWidth = 'none';
+        }
+      });
+    };
+
+    updateContainerSizes();
+    window.addEventListener('resize', updateContainerSizes);
+  }
+
+  getCurrentBreakpoint() {
+    const width = window.innerWidth;
+    if (width >= this.breakpoints.xl) return 'xl';
+    if (width >= this.breakpoints.lg) return 'lg';
+    if (width >= this.breakpoints.md) return 'md';
+    return 'sm';
+  }
+}
+
+// Performance monitoring
+class PerformanceMonitor {
+  constructor() {
+    this.init();
+  }
+
+  init() {
+    this.monitorLCP();
+    this.monitorCLS();
+    this.monitorFID();
+  }
+
+  monitorLCP() {
+    if ('PerformanceObserver' in window) {
+      const observer = new PerformanceObserver((entryList) => {
+        const entries = entryList.getEntries();
+        const lastEntry = entries[entries.length - 1];
+        console.log('LCP:', lastEntry.startTime);
+      });
+      
+      try {
+        observer.observe({ entryTypes: ['largest-contentful-paint'] });
+      } catch (e) {
+        // Fallback for browsers that don't support LCP
+      }
+    }
+  }
+
+  monitorCLS() {
+    if ('LayoutShift' in window) {
+      let clsValue = 0;
+      const observer = new PerformanceObserver((entryList) => {
+        for (const entry of entryList.getEntries()) {
+          if (!entry.hadRecentInput) {
+            clsValue += entry.value;
+          }
+        }
+        console.log('CLS:', clsValue);
+      });
+      
+      try {
+        observer.observe({ entryTypes: ['layout-shift'] });
+      } catch (e) {
+        // Fallback for browsers that don't support CLS
+      }
+    }
+  }
+
+  monitorFID() {
+    if ('PerformanceObserver' in window) {
+      const observer = new PerformanceObserver((entryList) => {
+        for (const entry of entryList.getEntries()) {
+          console.log('FID:', entry.processingStart - entry.startTime);
+        }
+      });
+      
+      try {
+        observer.observe({ entryTypes: ['first-input'] });
+      } catch (e) {
+        // Fallback for browsers that don't support FID
+      }
+    }
+  }
+}
+
 // Global utilities and helpers
 window.AIIncomeBuilder = {
   // Language support
@@ -320,6 +560,11 @@ document.addEventListener('DOMContentLoaded', function() {
     language: lang,
     device: app.device.isMobile() ? 'mobile' : app.device.isTablet() ? 'tablet' : 'desktop'
   });
+  
+  // Initialize Mobile Showcase functionality
+  window.mobileShowcase = new MobileShowcase();
+  window.responsiveUtils = new ResponsiveUtils();
+  window.performanceMonitor = new PerformanceMonitor();
 });
 
 // Error handling

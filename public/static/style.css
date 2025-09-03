@@ -520,3 +520,107 @@ body {
   transform: translateY(0);
   opacity: 1;
 }
+
+/* Mobile Showcase Section Styles */
+.mobile-showcase-container {
+  position: relative;
+  z-index: 1;
+}
+
+.mobile-phone-frame {
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+/* Subtle parallax effect for desktop only */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .mobile-phone-frame {
+    transform: translateY(0);
+  }
+  
+  .mobile-phone-frame:hover {
+    transform: translateY(-8px) scale(1.02);
+  }
+}
+
+/* Global greeting animation */
+.global-greeting-text {
+  animation: fadeText 8s infinite;
+}
+
+@keyframes fadeText {
+  0%, 20% { opacity: 1; }
+  25%, 95% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* Responsive container improvements */
+@media (min-width: 1280px) {
+  .max-w-7xl {
+    max-width: 1280px;
+  }
+}
+
+/* Mobile showcase responsive adjustments */
+@media (max-width: 1023px) {
+  .mobile-showcase-container .mobile-phone-frame img {
+    max-width: 280px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .mobile-showcase-container {
+    text-align: center;
+  }
+  
+  .mobile-showcase-container .mobile-phone-frame img {
+    max-width: 260px;
+  }
+}
+
+/* Enhanced button hover effects */
+.scroll-to-quiz {
+  position: relative;
+  overflow: hidden;
+}
+
+.scroll-to-quiz::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.scroll-to-quiz:hover::before {
+  left: 100%;
+}
+
+/* Improved focus states for accessibility */
+.scroll-to-quiz:focus {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Performance optimizations for mobile showcase */
+.mobile-showcase-container {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Responsive typography for mobile showcase */
+@media (max-width: 640px) {
+  .mobile-showcase-container + .grid h2 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  .mobile-showcase-container + .grid p {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+}

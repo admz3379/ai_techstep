@@ -1,13 +1,25 @@
 // Simple Quiz Implementation for AI TechStep Challenge
-let quizData = null;
-let currentQuestion = 0;
-let selectedAnswers = [];
-let userScores = {
-    digital_product: 0,
-    service: 0,
-    ecommerce: 0,
-    consulting: 0
-};
+// Use window object to prevent variable redeclaration errors
+if (typeof window !== 'undefined') {
+    window.quizData = window.quizData || null;
+    window.currentQuestion = window.currentQuestion || 0;
+    window.selectedAnswers = window.selectedAnswers || [];
+    window.userScores = window.userScores || {
+        digital_product: 0,
+        service: 0,
+        ecommerce: 0,
+        consulting: 0
+    };
+}
+
+// Local references for easier access
+let quizData, currentQuestion, selectedAnswers, userScores;
+if (typeof window !== 'undefined') {
+    quizData = window.quizData;
+    currentQuestion = window.currentQuestion;
+    selectedAnswers = window.selectedAnswers;
+    userScores = window.userScores;
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing quiz...');
@@ -105,7 +117,7 @@ function displayQuestion(questionIndex) {
     }
     
     const question = quizData.questions[questionIndex];
-    currentQuestion = questionIndex;
+    currentQuestion = window.currentQuestion = questionIndex;
     
     // Update progress
     updateProgress(questionIndex + 1, quizData.questions.length);

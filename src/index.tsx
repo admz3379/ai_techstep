@@ -886,20 +886,51 @@ app.get('/payment', async (c) => {
                 </div>
               </div>
 
-              {/* Stripe Payment Form */}
-              <div id="stripe-payment-element" className="mb-6">
-                {/* Stripe Elements will be inserted here */}
+              {/* Customer Information Form */}
+              <div className="mb-6 space-y-4" id="payment-container">
+                <div className="text-left">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                  <input 
+                    type="email" 
+                    id="customer-email" 
+                    defaultValue={email}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    placeholder="your.email@example.com"
+                    required
+                  />
+                </div>
+                
+                <div className="text-left">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+                  <input 
+                    type="text" 
+                    id="customer-name" 
+                    defaultValue={name}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    placeholder="Your full name"
+                    required
+                  />
+                </div>
+                
+                {/* PayPal Payment Button */}
+                <div className="mt-6">
+                  <div className="text-center mb-4">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">Complete your payment with PayPal</p>
+                    <p className="text-xs text-gray-500">💳 Credit cards, debit cards, or PayPal balance</p>
+                  </div>
+                  
+                  <div id="paypal-button-container" className="min-h-[60px]">
+                    {/* PayPal button will be inserted here */}
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                      <p className="text-sm text-gray-500">Loading PayPal...</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-
-              <button 
-                id="stripe-submit" 
-                className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-8 rounded-xl font-bold text-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg mb-4"
-              >
-                🚀 Secure My AI TechStep Challenge - $19.99
-              </button>
               
               <div className="text-xs text-gray-500 mb-6">
-                ✅ Secure SSL encryption • 💳 All major cards accepted • 🔒 No subscription
+                🔒 Secure PayPal encryption • 💳 All payment methods accepted • ✅ No subscription
               </div>
 
               {/* Payment security */}
@@ -927,8 +958,7 @@ app.get('/payment', async (c) => {
         </div>
       </div>
       
-      <script src="https://js.stripe.com/v3/"></script>
-      <script src="/static/stripe-payment.js"></script>
+      <script src="/static/paypal-payment.js"></script>
       <script src="/static/live-purchases.js"></script>
     </div>,
     { title: 'Secure Payment - AI TechStep Challenge $19.99' }
@@ -1716,6 +1746,106 @@ app.post('/api/test-notification', async (c) => {
   } catch (error) {
     console.error('Test notification error:', error);
     return c.json({ success: false, error: 'Failed to send test notification' }, 500);
+  }
+});
+
+// API endpoint to process PayPal payment
+app.post('/api/process-paypal-payment', async (c) => {
+  try {
+    const { env } = c;
+    const { sessionId, email, name, goal, paypalOrderId, paypalDetails, amount, currency } = await c.req.json();
+
+    console.log('Processing PayPal payment:', { paypalOrderId, email, amount });
+
+    // Validate required fields
+    if (!sessionId || !email || !name || !paypalOrderId) {
+      return c.json({ 
+        success: false, 
+        message: 'Missing required payment information' 
+      }, 400);
+    }
+
+    // Create or get user
+    const userId = await createUser(env, email, name, 'en');
+    
+    // Save payment record
+    const paymentResult = await env.DB.prepare(`
+      INSERT INTO payments (user_id, amount, currency, payment_method, payment_id, status, payment_data, created_at)
+      VALUES (?, ?, ?, 'paypal', ?, 'completed', ?, CURRENT_TIMESTAMP)
+    `).bind(
+      userId,
+      Math.round(amount * 100), // Store in cents
+      currency || 'USD',
+      paypalOrderId,
+      JSON.stringify(paypalDetails)
+    ).run();
+
+    console.log('Payment record created:', paymentResult);
+
+    // Calculate track scores if quiz responses exist
+    let trackScores: TrackScores = {
+      digital_product: 0,
+      service: 0,
+      ecommerce: 0,
+      consulting: 0
+    };
+
+    try {
+      trackScores = await calculateTrackScores(env, sessionId);
+    } catch (error) {
+      console.log('No quiz responses found, using default scores');
+      // Use default scores for users who go directly to payment
+      trackScores = {
+        digital_product: 70,
+        service: 60,
+        ecommerce: 50,
+        consulting: 40
+      };
+    }
+
+    // Assign user track
+    const assignedTrack = await assignUserTrack(env, userId, trackScores);
+    console.log('Assigned track:', assignedTrack);
+
+    // Create user progress
+    await createUserProgress(env, userId);
+
+    // Deliver assets
+    await deliverAssets(env, userId, assignedTrack);
+
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(email, name);
+      console.log('Welcome email sent to:', email);
+    } catch (emailError) {
+      console.error('Welcome email failed:', emailError);
+      // Don't fail payment for email issues
+    }
+
+    // Send notification to support
+    try {
+      await sendEmailNotification(email, name, goal, trackScores);
+      console.log('Support notification sent');
+    } catch (notificationError) {
+      console.error('Support notification failed:', notificationError);
+      // Don't fail payment for notification issues
+    }
+
+    return c.json({
+      success: true,
+      message: 'Payment processed successfully',
+      successUrl: `/success?email=${encodeURIComponent(email)}`,
+      paymentId: paypalOrderId,
+      userId: userId,
+      assignedTrack: assignedTrack
+    });
+
+  } catch (error) {
+    console.error('PayPal payment processing error:', error);
+    return c.json({ 
+      success: false, 
+      message: 'Payment processing failed. Please contact support.' 
+    }, 500);
   }
 });
 

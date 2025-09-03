@@ -17,10 +17,11 @@
 ## Currently Completed Features
 - ✅ **Homepage**: Clean Coursiv-style landing with minimal icons
 - ✅ **Interactive Quiz**: 20 parent-focused questions (simple English, fast loading)
+- ✅ **PayPal Payment Integration**: Secure one-time $19.99 payments (replaced Stripe)
 - ✅ **Email Notifications**: Automatic emails to support@techstepfoundation.org on signup
 - ✅ **Welcome Emails**: Personalized user onboarding emails ready for production
-- ✅ **Scratch Card Gamification**: 50% discount reveal without generic icons
-- ✅ **One-Time Payment System**: $19.99 fixed price (NO subscriptions)
+- ✅ **Direct Payment Flow**: Quiz → Email → PayPal (simplified conversion)
+- ✅ **JavaScript Fixes**: Resolved variable conflicts preventing payment processing
 - ✅ **Social Proof**: Live purchase notifications from other parents
 - ✅ **Success Flow**: Complete user onboarding and dashboard access
 - ✅ **Parent-Focused Messaging**: All content specifically for work-from-home parents
@@ -30,14 +31,13 @@
 ## Functional Entry URIs
 1. **Homepage**: `/` - Main landing with "HAVE YOU EVER USED AI?" entry point
 2. **Quiz Flow**: `/quiz?lang=en&answer=yes|no` - 20-question parent assessment
-3. **Scratch Card**: `/scratch-card?session=X&email=X&name=X&goal=X` - Discount gamification
-4. **Checkout**: `/checkout?session=X&email=X&name=X&goal=X` - One-time $19.99 payment
-5. **Success**: `/success?email=X&name=X` - Post-purchase welcome
-6. **Dashboard**: `/dashboard` - 28-day AI challenge access
-7. **API Endpoints**:
+3. **PayPal Payment**: `/payment?session=X&email=X&name=X&goal=X` - One-time $19.99 PayPal checkout
+4. **Success**: `/success?email=X&name=X` - Post-purchase welcome
+5. **Dashboard**: `/dashboard` - 28-day AI challenge access
+6. **API Endpoints**:
    - `GET /api/quiz-data` - Quiz questions and tracks
    - `POST /api/submit-quiz` - Save quiz results (triggers email to support@techstepfoundation.org)
-   - `POST /api/process-payment` - Handle one-time payments (sends welcome email)
+   - `POST /api/process-paypal-payment` - Handle PayPal payments (sends welcome email)
    - `POST /api/configure-email` - Setup email service integration
    - `POST /api/test-notification` - Test email notifications
 
@@ -79,16 +79,16 @@
 
 ## Features Not Yet Implemented
 - 🔲 Production email service integration (Resend/SendGrid setup needed)
-- 🔲 Advanced payment processing (Stripe/PayPal integration)
 - 🔲 Detailed progress tracking (daily lesson completion)
 - 🔲 Parent community features (forums, chat)
 - 🔲 Mobile app (PWA implementation)
 - 🔲 Multi-language support (Spanish, French)
 - 🔲 Advanced analytics (conversion tracking)
+- 🔲 Production PayPal client ID (currently using sandbox for development)
 
 ## Recommended Next Steps for Development
-1. **Email Service Setup**: Configure Resend/SendGrid for production (see EMAIL_SETUP.md)
-2. **Payment Integration**: Implement Stripe for real payment processing
+1. **Production PayPal Setup**: Replace sandbox client ID with production PayPal client ID
+2. **Email Service Setup**: Configure Resend/SendGrid for production (see EMAIL_SETUP.md)
 3. **Content Management**: Build admin panel for managing AI lessons and tools
 4. **Community Features**: Add parent forums and success story sharing
 5. **Mobile App**: Convert to Progressive Web App (PWA) for app store distribution

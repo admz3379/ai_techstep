@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
 import type { Bindings, QuizSession, TrackScores, User, QuizResult, Language, TrackType } from './types'
-import { executiveQuizQuestions, executiveTrackDescriptions } from './executive-quiz-data'
+import { aiChallengeQuizQuestions, aiChallengeTrackDescriptions } from './ai-challenge-quiz-data'
 import { renderer } from './renderer'
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -54,7 +54,7 @@ async function calculateTrackScores(env: Bindings, sessionId: string): Promise<T
   };
 
   responses.results?.forEach((response: any) => {
-    const question = quizQuestions.find(q => q.id === response.question_id);
+    const question = aiChallengeQuizQuestions.find(q => q.id === response.question_id);
     if (question) {
       const selectedOption = question.options.find(opt => opt.value === response.answer_value);
       if (selectedOption) {
@@ -122,22 +122,22 @@ app.get('/about', (c) => {
   const lang = c.req.query('lang') || 'en';
   
   return c.render(
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600">
       <div className="container mx-auto px-4 py-16">
-        <div className="text-center text-gray-900">
-          <h1 className="text-4xl font-bold mb-6">Executive Edge Academy</h1>
-          <p className="text-xl text-gray-600 mb-8">Premium business transformation platform</p>
-          <a href="/quiz" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
-            Take Business Assessment
+        <div className="text-center text-white">
+          <h1 className="text-5xl font-bold mb-6">🚀 28-DAY AI CHALLENGE</h1>
+          <p className="text-2xl mb-8">Join 700,000+ People Building Income with AI</p>
+          <a href="/quiz" className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-8 py-4 rounded-full text-xl transform hover:scale-105 transition-all shadow-lg">
+            🎯 START YOUR AI JOURNEY NOW!
           </a>
         </div>
       </div>
     </div>,
-    { title: 'Executive Edge Academy - About' }
+    { title: '28-Day AI Challenge - Transform Your Income' }
   );
 });
 
-// Executive Business Assessment - Clean, professional quiz design
+// 28-Day AI Challenge Quiz - Gamified B2C design
 app.get('/quiz', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Language;
   const sessionId = crypto.randomUUID();
@@ -163,23 +163,34 @@ app.get('/quiz', async (c) => {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Executive Business Assessment</h1>
-          <p className="text-lg text-gray-600">Discover your optimal AI-powered business model</p>
+          <div className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold mb-4">
+            🚀 28-DAY AI CHALLENGE
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+            Discover Your Perfect AI Income Path!
+          </h1>
+          <p className="text-lg text-gray-600">Join 700,000+ people who've transformed their income with AI</p>
+          <div className="flex justify-center items-center mt-4 space-x-4">
+            <div className="flex items-center text-green-600">
+              <span className="text-2xl mr-2">🔥</span>
+              <span className="font-semibold">2,847 people took this today!</span>
+            </div>
+          </div>
         </div>
 
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-sm text-gray-500">Question <span id="current-q">1</span> of 6</span>
-            <span className="text-sm text-gray-500"><span id="progress-percent">17</span>%</span>
+            <span className="text-sm text-gray-500">Question <span id="current-q">1</span> of 20</span>
+            <span className="text-sm text-gray-500"><span id="progress-percent">5</span>%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div id="progress-bar" className="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 17%"></div>
+            <div id="progress-bar" className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-500" style="width: 5%"></div>
           </div>
         </div>
 
         {/* Question container */}
-        <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
           <div id="question-container" data-session-id={sessionId} data-lang={lang}>
             <h2 id="question-text" className="text-xl font-semibold text-gray-900 mb-8 leading-relaxed"></h2>
             
@@ -199,10 +210,10 @@ app.get('/quiz', async (c) => {
               <button 
                 id="next-btn" 
                 onclick="nextQuestion()" 
-                className="px-8 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium" 
+                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold transform hover:scale-105" 
                 disabled
               >
-                Continue →
+                Continue 🚀
               </button>
             </div>
           </div>
@@ -210,21 +221,28 @@ app.get('/quiz', async (c) => {
           {/* Results container (hidden initially) */}
           <div id="results-container" className="hidden">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-6 animate-pulse">
+                <span className="text-4xl">🎆</span>
               </div>
               
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Recommended Business Model</h2>
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+                🎉 Your Perfect AI Income Match!
+              </h2>
               
-              <div id="track-result" className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-                <h3 id="track-name" className="text-xl font-bold text-blue-900 mb-3"></h3>
-                <p id="track-description" className="text-blue-800 leading-relaxed"></p>
+              <div id="track-result" className="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl p-6 mb-8 shadow-lg">
+                <h3 id="track-name" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-3"></h3>
+                <p id="track-description" className="text-gray-700 leading-relaxed text-lg"></p>
               </div>
               
-              <div id="email-form" className="bg-gray-50 rounded-lg p-6 mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Get Your Personalized 47-Page Business Blueprint</h3>
+              <div id="email-form" className="bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-xl p-6 mb-6">
+                <div className="text-center mb-4">
+                  <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-bounce">
+                    🔥 LIMITED TIME OFFER!
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
+                  Get Your FREE AI Income Roadmap + 🎁 Bonus Training!
+                </h3>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <input 
                     type="email" 
@@ -235,21 +253,36 @@ app.get('/quiz', async (c) => {
                   />
                   <button 
                     onclick="submitQuiz()" 
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors whitespace-nowrap"
+                    className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 font-bold transition-all duration-200 whitespace-nowrap transform hover:scale-105 shadow-lg"
                   >
-                    Get My Blueprint
+                    🎁 GET MY FREE ROADMAP NOW!
                   </button>
                 </div>
               </div>
               
-              <div className="text-left bg-white border border-gray-200 rounded-lg p-6">
-                <h4 className="font-semibold text-gray-900 mb-3">Your Blueprint Includes:</h4>
-                <div className="text-sm text-gray-600 space-y-2">
-                  <p>✓ Custom AI business model recommendation with revenue projections</p>
-                  <p>✓ 90-day implementation roadmap with specific milestones</p>
-                  <p>✓ Resource requirements and investment timeline analysis</p>
-                  <p>✓ Competitive landscape and market opportunity assessment</p>
-                  <p>✓ Invitation to exclusive Executive Edge Academy program ($4,997 value)</p>
+              <div className="text-left bg-white border border-gray-200 rounded-xl p-6 shadow-md">
+                <h4 className="font-bold text-gray-900 mb-4 text-center">🎁 Your FREE Package Includes:</h4>
+                <div className="text-sm text-gray-700 space-y-3">
+                  <div className="flex items-center">
+                    <span className="text-green-500 mr-3">🎯</span>
+                    <span>Personalized AI income strategy based on your answers</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-green-500 mr-3">🚀</span>
+                    <span>Step-by-step 28-day action plan to start earning</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-green-500 mr-3">📚</span>
+                    <span>FREE AI tools and resources library ($297 value)</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-green-500 mr-3">🏆</span>
+                    <span>Exclusive invite to our 700k+ AI community</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-green-500 mr-3">⚡</span>
+                    <span>Bonus: "AI Income Secrets" masterclass ($197 value)</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -257,7 +290,7 @@ app.get('/quiz', async (c) => {
         </div>
       </div>
     </div>,
-    { title: 'Executive Business Assessment - Executive Edge Academy' }
+    { title: '28-Day AI Challenge - Find Your Perfect AI Income Path!' }
   );
 });
 
@@ -267,8 +300,8 @@ app.get('/api/quiz-data', async (c) => {
   
   return c.json({
     success: true,
-    questions: executiveQuizQuestions,
-    trackDescriptions: executiveTrackDescriptions
+    questions: aiChallengeQuizQuestions,
+    trackDescriptions: aiChallengeTrackDescriptions
   });
 });
 
@@ -298,7 +331,7 @@ app.post('/api/submit-quiz', async (c) => {
   }
 });
 
-// Executive program enrollment page
+// 28-Day AI Challenge enrollment page with B2C pricing
 app.get('/checkout', async (c) => {
   const sessionId = c.req.query('session');
   const email = c.req.query('email');
@@ -308,117 +341,205 @@ app.get('/checkout', async (c) => {
   }
   
   return c.render(
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Join Executive Edge Academy</h1>
-          <p className="text-lg text-gray-600">Complete your enrollment in the premier business transformation program</p>
+          <div className="inline-block bg-red-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4 animate-pulse">
+            🔥 LIMITED TIME: 87% OFF!
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+            🚀 Join the 28-Day AI Challenge
+          </h1>
+          <p className="text-xl text-gray-600">Transform your income with AI in just 28 days!</p>
         </div>
         
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 mb-8 border-4 border-yellow-300">
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Executive Transformation Program</h2>
+              <div className="text-center mb-6">
+                <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-full font-bold">
+                  🏆 MOST POPULAR CHOICE
+                </span>
+              </div>
+              
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">28-Day AI Challenge</h2>
               
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-700">12-Week Intensive Program</span>
-                  <span className="font-semibold text-gray-900">$4,997</span>
+                  <span className="text-gray-700">Complete 28-Day Program</span>
+                  <span className="text-gray-500 line-through">$397</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-700">Personal Success Manager</span>
-                  <span className="text-gray-500">Included</span>
+                  <span className="text-gray-700">AI Tools & Resources Library</span>
+                  <span className="text-gray-500 line-through">$297</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-700">Custom AI Toolkit ($50K+ value)</span>
-                  <span className="text-gray-500">Included</span>
+                  <span className="text-gray-700">Private Community Access</span>
+                  <span className="text-gray-500 line-through">$97</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-700">Mastermind Network Access</span>
-                  <span className="text-gray-500">Included</span>
+                  <span className="text-gray-700">Weekly Live Coaching Calls</span>
+                  <span className="text-gray-500 line-through">$197</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-700">Assessment Completion Bonus</span>
-                  <span className="font-semibold text-green-600">-$500</span>
+                  <span className="text-gray-700">Bonus: AI Income Blueprints</span>
+                  <span className="text-gray-500 line-through">$497</span>
                 </div>
-                <div className="flex justify-between items-center py-4 text-xl font-bold">
-                  <span>Investment Total</span>
-                  <span>$4,497</span>
+                <div className="bg-red-50 rounded-lg p-3 border border-red-200">
+                  <div className="flex justify-between items-center text-red-600 font-semibold">
+                    <span>87% OFF Launch Special</span>
+                    <span>-$1,385</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center py-4 text-3xl font-bold bg-yellow-100 rounded-lg px-4">
+                  <span>TODAY ONLY:</span>
+                  <span className="text-green-600">$97</span>
                 </div>
               </div>
               
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-green-800 mb-2">90-Day Revenue Guarantee</h3>
-                <p className="text-sm text-green-700">Achieve your first $10K month within 90 days or receive a full refund plus $1,000 for your time.</p>
+                <h3 className="font-semibold text-green-800 mb-2">💰 30-Day Money-Back Guarantee</h3>
+                <p className="text-sm text-green-700">If you don't see results in 30 days, get 100% of your money back - no questions asked!</p>
               </div>
             </div>
             
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">What You'll Achieve</h3>
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">🎯 What You'll Get</h3>
               
-              <div className="space-y-4 text-sm text-gray-600">
+              <div className="space-y-4 text-sm text-gray-700">
                 <div className="flex items-start">
-                  <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <span>Build a $10K-$100K+ monthly AI-powered business</span>
+                  <span className="text-green-500 text-xl mr-3">🚀</span>
+                  <span>28-day step-by-step roadmap to your first AI income</span>
                 </div>
                 <div className="flex items-start">
-                  <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <span>Access proven systems used by Fortune 500 executives</span>
+                  <span className="text-green-500 text-xl mr-3">🛠️</span>
+                  <span>Complete toolkit of AI tools and software (worth $2,000+)</span>
                 </div>
                 <div className="flex items-start">
-                  <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <span>Join network of 2,847+ successful Academy graduates</span>
+                  <span className="text-green-500 text-xl mr-3">👥</span>
+                  <span>Access to private community of 700,000+ AI entrepreneurs</span>
                 </div>
                 <div className="flex items-start">
-                  <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <span>Receive personal mentorship from industry experts</span>
+                  <span className="text-green-500 text-xl mr-3">📹</span>
+                  <span>Weekly live group coaching calls with AI experts</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-green-500 text-xl mr-3">📚</span>
+                  <span>Exclusive case studies of people earning $1K-$10K+ monthly</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-green-500 text-xl mr-3">⚡</span>
+                  <span>Done-for-you templates and swipe files</span>
                 </div>
               </div>
               
-              <button className="w-full mt-6 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                Secure Your Spot - Enroll Now
-              </button>
+              <div className="mt-8 space-y-4">
+                <button className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                  🎯 YES! START MY AI JOURNEY - $97
+                </button>
+                
+                <div className="text-center">
+                  <div className="text-red-600 font-bold mb-2">⏰ This offer expires in:</div>
+                  <div id="countdown-timer" className="text-2xl font-bold text-red-600">23:59:42</div>
+                </div>
+              </div>
               
-              <p className="text-xs text-gray-500 mt-3 text-center">
-                Secure enrollment • SSL encrypted • 14-day satisfaction guarantee
+              <p className="text-xs text-gray-500 mt-4 text-center">
+                🔒 Secure payment • SSL encrypted • 30-day guarantee
               </p>
             </div>
           </div>
         </div>
+        
+        {/* Testimonials section */}
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h3 className="text-2xl font-bold text-center mb-8">🌟 Success Stories from Our Community</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-gray-50 rounded-lg p-6">
+              <div className="flex items-center mb-3">
+                <span className="text-2xl mr-3">👤</span>
+                <div>
+                  <div className="font-semibold">Sarah M.</div>
+                  <div className="text-sm text-gray-600">Marketing Assistant</div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700">"I went from $0 to $3,200/month in just 6 weeks using AI to create digital products!"</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-6">
+              <div className="flex items-center mb-3">
+                <span className="text-2xl mr-3">👤</span>
+                <div>
+                  <div className="font-semibold">Mike R.</div>
+                  <div className="text-sm text-gray-600">Teacher</div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700">"The AI tools helped me start a tutoring service that now makes $5K/month!"</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-6">
+              <div className="flex items-center mb-3">
+                <span className="text-2xl mr-3">👤</span>
+                <div>
+                  <div className="font-semibold">Lisa T.</div>
+                  <div className="text-sm text-gray-600">Stay-at-home Mom</div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700">"I replaced my husband's income with my AI e-commerce store in 3 months!"</p>
+            </div>
+          </div>
+        </div>
       </div>
+      <script src="/static/countdown.js"></script>
     </div>,
-    { title: 'Enroll - Executive Edge Academy' }
+    { title: 'Join the 28-Day AI Challenge - Transform Your Income!' }
   );
 });
 
-// Dashboard (will be implemented after payment)
+// Dashboard for 28-Day AI Challenge members
 app.get('/dashboard', async (c) => {
   return c.render(
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">🚀 Your AI Income Dashboard</h1>
-        <p className="text-gray-600">Welcome to your personalized AI income building journey!</p>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+            🚀 Your AI Challenge Dashboard
+          </h1>
+          <p className="text-xl text-gray-600">Welcome to your 28-day transformation journey!</p>
+        </div>
         
-        {/* Dashboard content will be built after payment integration */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-xl p-6 shadow-lg">
+            <div className="text-center">
+              <span className="text-3xl mb-2 block">📅</span>
+              <h3 className="font-bold text-gray-900">Day 1</h3>
+              <p className="text-gray-600">Getting Started</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-lg">
+            <div className="text-center">
+              <span className="text-3xl mb-2 block">👥</span>
+              <h3 className="font-bold text-gray-900">700,000+</h3>
+              <p className="text-gray-600">Community Members</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-lg">
+            <div className="text-center">
+              <span className="text-3xl mb-2 block">💰</span>
+              <h3 className="font-bold text-gray-900">$0</h3>
+              <p className="text-gray-600">Current Earnings</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold mb-4">🎯 Your Next Steps</h2>
+          <p className="text-gray-600 mb-4">Complete your personalized AI income roadmap and start building your future!</p>
+          <a href="/quiz" className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 transform hover:scale-105">
+            Continue Your Journey
+          </a>
+        </div>
       </div>
     </div>,
-    { title: 'Dashboard - AI Income Builder' }
+    { title: 'Dashboard - 28-Day AI Challenge' }
   );
 });
 

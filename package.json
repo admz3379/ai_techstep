@@ -1,7 +1,7 @@
 {
-  "name": "executive-edge-academy",
+  "name": "ai-challenge-platform",
   "version": "1.0.0",
-  "description": "Executive Edge Academy - Premium business transformation platform for building AI-powered enterprises",
+  "description": "28-Day AI Challenge - Transform your income with AI in just 28 days! Join 700,000+ people building income with AI.",
   "type": "module",
   "scripts": {
     "dev": "vite",

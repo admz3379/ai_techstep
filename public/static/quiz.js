@@ -46,23 +46,57 @@ function loadQuestion(index) {
   document.getElementById('progress-percent').textContent = Math.round(((index + 1) / quizState.questions.length) * 100);
   document.getElementById('progress-bar').style.width = ((index + 1) / quizState.questions.length) * 100 + '%';
   
-  document.getElementById('question-text').textContent = question.text[quizState.lang] || question.text.en;
+  // Add question type styling for better B2C appeal
+  const questionText = question.text[quizState.lang] || question.text.en;
+  const isFirstQuestion = index === 0;
+  
+  if (isFirstQuestion) {
+    document.getElementById('question-text').innerHTML = `
+      <div class="text-center mb-6">
+        <span class="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
+          🚀 QUESTION ${index + 1}
+        </span>
+      </div>
+      <div class="text-3xl font-bold text-center mb-4">${questionText}</div>
+    `;
+  } else {
+    document.getElementById('question-text').innerHTML = `
+      <div class="text-center mb-4">
+        <span class="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold mb-3">
+          QUESTION ${index + 1} OF 20
+        </span>
+      </div>
+      <div class="text-xl font-semibold text-center">${questionText}</div>
+    `;
+  }
   
   const optionsContainer = document.getElementById('options-container');
   optionsContainer.innerHTML = '';
   
   question.options.forEach((option, optionIndex) => {
     const optionDiv = document.createElement('div');
-    optionDiv.className = 'border-2 border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:border-blue-300 hover:bg-blue-50';
+    optionDiv.className = 'border-2 border-gray-200 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:border-purple-400 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transform hover:scale-105 shadow-sm hover:shadow-md';
     optionDiv.onclick = () => selectOption(optionIndex, option.value);
-    optionDiv.innerHTML = `
-      <div class="flex items-start">
-        <div class="w-5 h-5 border-2 border-gray-300 rounded-full mr-4 mt-0.5 flex items-center justify-center flex-shrink-0">
-          <div class="w-2.5 h-2.5 bg-blue-600 rounded-full hidden"></div>
+    
+    // Special styling for first question (YES/NO)
+    if (isFirstQuestion) {
+      optionDiv.className = 'border-3 border-gray-300 rounded-xl p-6 cursor-pointer transition-all duration-200 hover:border-purple-500 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transform hover:scale-105 shadow-lg hover:shadow-xl';
+      optionDiv.innerHTML = `
+        <div class="text-center">
+          <div class="text-4xl font-bold mb-2 ${optionIndex === 0 ? 'text-green-600' : 'text-blue-600'}">${option.text[quizState.lang] || option.text.en}</div>
         </div>
-        <span class="text-gray-700 leading-relaxed">${option.text[quizState.lang] || option.text.en}</span>
-      </div>
-    `;
+      `;
+    } else {
+      optionDiv.innerHTML = `
+        <div class="flex items-start">
+          <div class="w-6 h-6 border-2 border-gray-300 rounded-full mr-4 mt-0.5 flex items-center justify-center flex-shrink-0">
+            <div class="w-3 h-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full hidden"></div>
+          </div>
+          <span class="text-gray-700 leading-relaxed font-medium">${option.text[quizState.lang] || option.text.en}</span>
+        </div>
+      `;
+    }
+    
     optionsContainer.appendChild(optionDiv);
   });
   
@@ -71,23 +105,43 @@ function loadQuestion(index) {
 }
 
 function selectOption(optionIndex, value) {
-  // Update UI
+  // Update UI with more colorful B2C styling
   document.querySelectorAll('#options-container > div').forEach((div, index) => {
-    const circle = div.querySelector('div > div');
+    const circle = div.querySelector('.w-6') || div.querySelector('.w-5'); // Handle both circle sizes
+    const innerCircle = circle?.querySelector('div');
+    
     if (index === optionIndex) {
-      div.classList.add('border-blue-600', 'bg-blue-50');
-      div.classList.remove('border-gray-200');
-      circle.classList.remove('hidden');
+      div.classList.add('border-purple-600', 'bg-gradient-to-r', 'from-purple-100', 'to-blue-100', 'shadow-lg');
+      div.classList.remove('border-gray-200', 'border-gray-300');
+      if (innerCircle) {
+        innerCircle.classList.remove('hidden');
+      }
+      
+      // Add celebration animation for selection
+      div.style.animation = 'pulse 0.3s ease-in-out';
+      setTimeout(() => {
+        div.style.animation = '';
+      }, 300);
     } else {
-      div.classList.remove('border-blue-600', 'bg-blue-50');
+      div.classList.remove('border-purple-600', 'bg-gradient-to-r', 'from-purple-100', 'to-blue-100', 'shadow-lg');
       div.classList.add('border-gray-200');
-      circle.classList.add('hidden');
+      if (innerCircle) {
+        innerCircle.classList.add('hidden');
+      }
     }
   });
   
   // Store answer
   quizState.selectedAnswers[quizState.currentQuestion] = { optionIndex, value };
   updateNextButton();
+  
+  // Add some encouragement for progress
+  if (quizState.currentQuestion === 0) {
+    setTimeout(() => {
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.innerHTML = '🎯 Amazing! Continue →';
+    }, 500);
+  }
 }
 
 function updateNextButton() {
@@ -95,9 +149,23 @@ function updateNextButton() {
   nextBtn.disabled = !quizState.selectedAnswers[quizState.currentQuestion];
   
   if (quizState.currentQuestion === quizState.questions.length - 1 && quizState.selectedAnswers[quizState.currentQuestion]) {
-    nextBtn.textContent = 'See Results →';
+    nextBtn.innerHTML = '🎉 See My AI Path →';
+    nextBtn.classList.add('animate-pulse');
   } else if (quizState.selectedAnswers[quizState.currentQuestion]) {
-    nextBtn.textContent = 'Continue →';
+    // Progressive encouragement throughout the quiz
+    if (quizState.currentQuestion < 5) {
+      nextBtn.innerHTML = 'Continue 🚀';
+    } else if (quizState.currentQuestion < 10) {
+      nextBtn.innerHTML = 'Keep Going! 💪';
+    } else if (quizState.currentQuestion < 15) {
+      nextBtn.innerHTML = 'Almost There! ⚡';
+    } else {
+      nextBtn.innerHTML = 'Final Steps! 🎯';
+    }
+    nextBtn.classList.remove('animate-pulse');
+  } else {
+    nextBtn.innerHTML = 'Continue 🚀';
+    nextBtn.classList.remove('animate-pulse');
   }
 }
 
@@ -140,10 +208,10 @@ async function showResults() {
   document.getElementById('results-container').classList.remove('hidden');
   
   const trackNames = {
-    digital_product: 'Digital Intelligence Products',
-    service: 'Enterprise AI Services', 
-    ecommerce: 'AI Investment & Scaling',
-    consulting: 'AI Consulting Empire'
+    digital_product: '🚀 AI Digital Product Creator',
+    service: '💼 AI Service Provider', 
+    ecommerce: '🛒 AI E-commerce Entrepreneur',
+    consulting: '🎯 AI Strategy Consultant'
   };
   
   document.getElementById('track-name').textContent = trackNames[bestTrack];

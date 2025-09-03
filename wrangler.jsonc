@@ -6,6 +6,13 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ai-techstep-production",
+      "database_id": "292edfb4-22d8-4dcd-9f0d-cddbf3711820"
+    }
+  ],
   "vars": {
     "ENVIRONMENT": "production"
   }
